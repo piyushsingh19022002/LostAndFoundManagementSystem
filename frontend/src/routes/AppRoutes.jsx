@@ -3,7 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from '../pages/Home';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
-import Dashboard from '../pages/Dashboard';
+import AddItem from '../pages/AddItem';
+import ViewItems from '../pages/ViewItems';
 import NotFound from '../pages/NotFound';
 
 const AppRoutes = () => {
@@ -13,7 +14,8 @@ const AppRoutes = () => {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/add-item" element={<AddItem />} />
+        <Route path="/items" element={<ViewItems />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
