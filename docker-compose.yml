@@ -1,26 +1,42 @@
-version: '3.8'
-
 services:
+
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: lostfound-backend
+    image: piyushsingh19/lostfound-backend:latest
+    container_name: lostfound_backend_prod
+
     ports:
-      # Maps external port 5002 to internal port 5001 (based on your backend/.env PORT=5001)
-      - "5002:5001" 
+      - "5002:5002"
+
     env_file:
       - ./backend/.env
 
+    environment:
+      - NODE_ENV=production
+      - PORT=5002
+
+    restart: always
+
+    networks:
+      - mern_network
+
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: lostfound-frontend
+    image: piyushsingh19/lostfound-frontend:latest
+    container_name: lostfound_frontend_prod
+
     ports:
-      # Maps external port 5173 to internal port 5173
       - "5173:5173"
+
     env_file:
       - ./frontend/.env
+
+    restart: always
+
     depends_on:
       - backend
+
+    networks:
+      - mern_network
+
+networks:
+  mern_network:
+    driver: bridge
