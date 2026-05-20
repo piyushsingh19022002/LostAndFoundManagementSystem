@@ -8,7 +8,7 @@ connectDB();
 
 const app = express();
 
-// Middleware cors test
+// Middleware cors test 1
 app.use(cors());
 app.use(express.json());
 
