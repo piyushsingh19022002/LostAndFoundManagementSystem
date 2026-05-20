@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import API from '../services/api';
+import { AuthContext } from '../context/AuthContext';
 
 const Login = () => {
   // 1. Component State
@@ -9,6 +10,7 @@ const Login = () => {
     password: '',
   });
   const [error, setError] = useState('');
+  const { setUser } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const { email, password } = formData;
@@ -33,8 +35,9 @@ const Login = () => {
       if (response.data) {
         // Save token to LocalStorage
         localStorage.setItem('token', response.data.token);
+        setUser(response.data);
         alert('Login successful!');
-        navigate('/items'); // Redirect to items view
+        navigate('/dashboard'); // Redirect to dashboard
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');

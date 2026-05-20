@@ -27,6 +27,11 @@ const itemSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    status: {
+      type: String,
+      enum: ['lost', 'found', 'claimed'],
+      default: 'lost',
+    },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,

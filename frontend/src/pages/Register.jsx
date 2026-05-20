@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../services/api';
+import { AuthContext } from '../context/AuthContext';
 
 const Register = () => {
   // 1. Component State
@@ -10,6 +11,7 @@ const Register = () => {
     password: '',
   });
   const [error, setError] = useState('');
+  const { setUser } = useContext(AuthContext);
   const navigate = useNavigate();
 
   // Destructure for easier use
@@ -33,8 +35,10 @@ const Register = () => {
       const response = await API.post('/auth/register', { name, email, password });
       
       if (response.data) {
-        alert('Registration successful! Please login.');
-        navigate('/'); // Redirect to login page
+        localStorage.setItem('token', response.data.token);
+        setUser(response.data);
+        alert('Registration successful!');
+        navigate('/dashboard'); // Redirect to dashboard
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');

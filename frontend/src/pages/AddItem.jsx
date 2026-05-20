@@ -31,7 +31,7 @@ const AddItem = () => {
 
     try {
       // The token is automatically attached by our API interceptor
-      await API.post('/items', formData);
+      await API.post('/lost-items', formData);
       alert('Item added successfully!');
       navigate('/items'); // Redirect to items feed
     } catch (err) {

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createItem, getItems } = require('../controllers/itemController');
+const { createItem, getItems } = require('../controllers/lostItemController');
 const { protect } = require('../middleware/authMiddleware');
 
 // Routes
