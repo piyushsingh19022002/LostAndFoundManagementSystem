@@ -29,6 +29,7 @@ const Navbar = () => {
           <>
             <span style={{ marginRight: '10px' }}>Hello, {user.name}</span>
             <Link to="/dashboard" style={{ color: '#61dafb', textDecoration: 'none' }}>Dashboard</Link>
+            <Link to="/my-items" style={{ color: '#eab308', textDecoration: 'none' }}>My Items</Link>
             <Link to="/lost-items" style={{ color: '#61dafb', textDecoration: 'none' }}>Lost Items</Link>
             <Link to="/found-items" style={{ color: '#34d399', textDecoration: 'none' }}>Found Items</Link>
             <Link to="/add-lost-item" style={{ color: '#61dafb', textDecoration: 'none' }}>Add Lost Item</Link>

@@ -30,15 +30,41 @@ const createItem = async (req, res) => {
   }
 };
 
-// @desc    Get all lost items
-// @route   GET /api/lost-items
+// @desc    Get all lost items (with optional search / filter query params)
+// @route   GET /api/lost-items?search=&category=&location=
 // @access  Public
 const getLostItems = async (req, res) => {
   try {
-    // 1. Fetch all items and populate the 'user' field with 'name' and 'email'
-    const items = await Item.find().populate('user', 'name email').sort({ createdAt: -1 });
+    // 1. Extract optional query parameters from the request URL
+    const { search, category, location } = req.query;
 
-    // 2. Return the array of items
+    // 2. Build a dynamic filter object — only add conditions for fields that were provided
+    const filter = {};
+
+    // Text search: case-insensitive partial match on title
+    if (search && search.trim()) {
+      filter.$or = [
+        { title:       { $regex: search.trim(), $options: 'i' } },
+        { description: { $regex: search.trim(), $options: 'i' } },
+      ];
+    }
+
+    // Exact match on category (e.g. 'Lost' or 'Found')
+    if (category && category.trim() && category !== 'All') {
+      filter.category = category.trim();
+    }
+
+    // Partial case-insensitive match on location
+    if (location && location.trim()) {
+      filter.location = { $regex: location.trim(), $options: 'i' };
+    }
+
+    // 3. Pass the filter into find() — an empty filter {} returns all documents
+    const items = await Item.find(filter)
+      .populate('user', 'name email')
+      .sort({ createdAt: -1 });
+
+    // 4. Return filtered results
     res.status(200).json(items);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -98,8 +124,8 @@ const updateLostItem = async (req, res) => {
     }
 
     // 2. Verify ownership (compare item.user ObjectId to req.user.id)
-    if (item.user.toString() !== req.user.id.toString()) {
-      return res.status(403).json({ message: 'Not authorized to update this item' });
+    if (item.user.toString() !== req.user.id) {
+      return res.status(401).json({ message: 'Unauthorized' });
     }
 
     // 3. Perform partial update (fallback to existing properties if not provided)
@@ -134,8 +160,8 @@ const deleteLostItem = async (req, res) => {
     }
 
     // 2. Verify ownership (compare item.user ObjectId to req.user.id)
-    if (item.user.toString() !== req.user.id.toString()) {
-      return res.status(403).json({ message: 'Not authorized to delete this item' });
+    if (item.user.toString() !== req.user.id) {
+      return res.status(401).json({ message: 'Unauthorized' });
     }
 
     // 3. Delete document

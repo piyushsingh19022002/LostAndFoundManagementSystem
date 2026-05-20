@@ -1,56 +1,60 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../services/api';
 import Loader from '../components/Loader';
 import FoundItemCard from '../components/FoundItemCard';
+import SearchBar from '../components/SearchBar';
+import CategoryFilter from '../components/CategoryFilter';
+import { FOUND_ITEM_STATUSES, FOUND_STATUS_OPTIONS } from '../constants/categories';
 
 const FoundItems = () => {
-  const [items, setItems]               = useState([]);
-  const [filteredItems, setFilteredItems] = useState([]);
-  const [loading, setLoading]           = useState(true);
-  const [error, setError]               = useState('');
-  const [searchQuery, setSearchQuery]   = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [items, setItems]       = useState([]);
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState('');
 
-  // Fetch all found items once on mount
-  useEffect(() => {
-    const fetchFoundItems = async () => {
-      try {
-        setLoading(true);
-        const response = await API.get('/found-items');
-        setItems(response.data);
-        setFilteredItems(response.data);
-        setError('');
-      } catch (err) {
-        setError(err.response?.data?.message || 'Failed to load found items feed. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Filter states — each drives the backend query params
+  const [search, setSearch]     = useState('');
+  const [status, setStatus]     = useState('all');
+  const [location, setLocation] = useState('');
 
-    fetchFoundItems();
+  const debounceRef = useRef(null);
+
+  // Fetch found items with optional server-side filters
+  const fetchFoundItems = useCallback(async (searchVal, statusVal, locationVal) => {
+    try {
+      setLoading(true);
+      setError('');
+
+      const params = {};
+      if (searchVal.trim())                 params.search   = searchVal.trim();
+      if (statusVal && statusVal !== 'all') params.status   = statusVal;
+      if (locationVal.trim())               params.location = locationVal.trim();
+
+      const response = await API.get('/found-items', { params });
+      setItems(response.data);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to load found items feed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  // Client-side filter — runs whenever search or status filter changes
+  // 400 ms debounce — batches rapid filter changes into a single API call
   useEffect(() => {
-    let result = [...items];
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      fetchFoundItems(search, status, location);
+    }, 400);
+    return () => clearTimeout(debounceRef.current);
+  }, [search, status, location, fetchFoundItems]);
 
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter(
-        (item) =>
-          item.title.toLowerCase().includes(q) ||
-          item.description.toLowerCase().includes(q) ||
-          item.location.toLowerCase().includes(q)
-      );
-    }
+  const hasActiveFilters = search.trim() !== '' || status !== 'all' || location.trim() !== '';
 
-    if (statusFilter !== 'all') {
-      result = result.filter((item) => item.status === statusFilter);
-    }
-
-    setFilteredItems(result);
-  }, [searchQuery, statusFilter, items]);
+  const handleClear = () => {
+    setSearch('');
+    setStatus('all');
+    setLocation('');
+  };
 
   return (
     <div style={styles.container}>
@@ -67,31 +71,38 @@ const FoundItems = () => {
         </Link>
       </div>
 
-      {/* Search & Filter Controls */}
-      <div style={styles.controlsBar}>
-        <input
-          type="text"
-          placeholder="Search by title, description, or location..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          style={styles.searchInput}
-        />
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          style={styles.filterSelect}
-        >
-          <option value="all">All Statuses</option>
-          <option value="found">Found</option>
-          <option value="claimed">Claimed</option>
-          <option value="returned">Returned</option>
-        </select>
-      </div>
+      {/* Reusable SearchBar */}
+      <SearchBar
+        search={search}
+        onSearch={setSearch}
+        location={location}
+        onLocation={setLocation}
+        filterValue={status}
+        onFilter={setStatus}
+        filterOptions={FOUND_STATUS_OPTIONS}
+        filterLabel="Status filter"
+        placeholder="Search by title or description..."
+        onClear={handleClear}
+        hasActiveFilters={hasActiveFilters}
+        accentColor="#10b981"
+      />
+
+      {/* Status Chip Filter Strip */}
+      <CategoryFilter
+        categories={FOUND_ITEM_STATUSES}
+        selected={status}
+        onSelect={setStatus}
+        accentColor="rgba(16, 185, 129, 0.15)"
+        accentBorder="rgba(16, 185, 129, 0.5)"
+        accentTextColor="#34d399"
+        label="Filter found items by status"
+      />
 
       {/* Results Count */}
       {!loading && !error && (
         <p style={styles.resultsCount}>
-          {filteredItems.length} report{filteredItems.length !== 1 ? 's' : ''} found
+          {items.length} report{items.length !== 1 ? 's' : ''} found
+          {hasActiveFilters && ' (filtered)'}
         </p>
       )}
 
@@ -99,7 +110,7 @@ const FoundItems = () => {
       {loading && (
         <div style={styles.loaderContainer}>
           <Loader size="48px" color="#10b981" />
-          <p style={styles.loaderText}>Loading found items...</p>
+          <p style={styles.loaderText}>Searching database...</p>
         </div>
       )}
 
@@ -115,21 +126,29 @@ const FoundItems = () => {
       )}
 
       {/* Empty State */}
-      {!loading && !error && filteredItems.length === 0 && (
+      {!loading && !error && items.length === 0 && (
         <div style={styles.emptyState}>
           <span style={styles.emptyIcon}>📦</span>
-          <h3 style={styles.emptyTitle}>No found items match your search</h3>
-          <p style={styles.emptySubtitle}>Try adjusting your filters or be the first to report one!</p>
-          <Link to="/add-found-item" style={styles.emptyBtn}>
-            Report a Found Item
-          </Link>
+          <h3 style={styles.emptyTitle}>
+            {hasActiveFilters ? 'No items match your search' : 'No found items yet'}
+          </h3>
+          <p style={styles.emptySubtitle}>
+            {hasActiveFilters
+              ? 'Try adjusting your filters or clearing them.'
+              : 'Be the first to report a found item!'}
+          </p>
+          {hasActiveFilters ? (
+            <button onClick={handleClear} style={styles.emptyBtn}>Clear Filters</button>
+          ) : (
+            <Link to="/add-found-item" style={styles.emptyBtn}>Report a Found Item</Link>
+          )}
         </div>
       )}
 
       {/* Items Grid */}
-      {!loading && !error && filteredItems.length > 0 && (
+      {!loading && !error && items.length > 0 && (
         <div style={styles.grid}>
-          {filteredItems.map((item) => (
+          {items.map((item) => (
             <FoundItemCard key={item._id} item={item} />
           ))}
         </div>
@@ -151,7 +170,7 @@ const styles = {
     alignItems: 'flex-start',
     flexWrap: 'wrap',
     gap: '16px',
-    marginBottom: '32px',
+    marginBottom: '28px',
   },
   pageTitle: {
     fontSize: '2.5rem',
@@ -160,11 +179,7 @@ const styles = {
     margin: 0,
     letterSpacing: '-0.02em',
   },
-  pageSubtitle: {
-    fontSize: '1rem',
-    color: '#6b7280',
-    margin: '6px 0 0',
-  },
+  pageSubtitle: { fontSize: '1rem', color: '#6b7280', margin: '6px 0 0' },
   addBtn: {
     display: 'inline-block',
     padding: '12px 24px',
@@ -177,40 +192,7 @@ const styles = {
     whiteSpace: 'nowrap',
     boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)',
   },
-  controlsBar: {
-    display: 'flex',
-    gap: '12px',
-    flexWrap: 'wrap',
-    marginBottom: '16px',
-  },
-  searchInput: {
-    flex: 1,
-    minWidth: '260px',
-    padding: '12px 18px',
-    borderRadius: '10px',
-    border: '1px solid rgba(255,255,255,0.1)',
-    backgroundColor: 'rgba(17, 24, 39, 0.6)',
-    color: '#ffffff',
-    fontSize: '0.95rem',
-    fontFamily: 'inherit',
-    outline: 'none',
-  },
-  filterSelect: {
-    padding: '12px 16px',
-    borderRadius: '10px',
-    border: '1px solid rgba(255,255,255,0.1)',
-    backgroundColor: 'rgba(17, 24, 39, 0.6)',
-    color: '#ffffff',
-    fontSize: '0.9rem',
-    fontFamily: 'inherit',
-    outline: 'none',
-    cursor: 'pointer',
-  },
-  resultsCount: {
-    color: '#6b7280',
-    fontSize: '0.9rem',
-    marginBottom: '24px',
-  },
+  resultsCount: { color: '#6b7280', fontSize: '0.88rem', marginBottom: '8px' },
   loaderContainer: {
     display: 'flex',
     flexDirection: 'column',
@@ -218,10 +200,7 @@ const styles = {
     paddingTop: '80px',
     gap: '16px',
   },
-  loaderText: {
-    color: '#9ca3af',
-    fontSize: '0.95rem',
-  },
+  loaderText: { color: '#9ca3af', fontSize: '0.95rem' },
   errorAlert: {
     display: 'flex',
     gap: '16px',
@@ -232,17 +211,8 @@ const styles = {
     maxWidth: '480px',
     fontSize: '1.5rem',
   },
-  alertTitle: {
-    margin: '0 0 6px',
-    color: '#ef4444',
-    fontSize: '1.1rem',
-    fontWeight: '700',
-  },
-  alertMsg: {
-    margin: 0,
-    color: '#e5e7eb',
-    fontSize: '0.9rem',
-  },
+  alertTitle: { margin: '0 0 6px', color: '#ef4444', fontSize: '1.1rem', fontWeight: '700' },
+  alertMsg: { margin: 0, color: '#e5e7eb', fontSize: '0.9rem' },
   emptyState: {
     display: 'flex',
     flexDirection: 'column',
@@ -252,17 +222,8 @@ const styles = {
     textAlign: 'center',
   },
   emptyIcon: { fontSize: '4rem' },
-  emptyTitle: {
-    fontSize: '1.4rem',
-    fontWeight: '700',
-    color: '#e5e7eb',
-    margin: 0,
-  },
-  emptySubtitle: {
-    color: '#6b7280',
-    fontSize: '0.95rem',
-    margin: 0,
-  },
+  emptyTitle: { fontSize: '1.4rem', fontWeight: '700', color: '#e5e7eb', margin: 0 },
+  emptySubtitle: { color: '#6b7280', fontSize: '0.95rem', margin: 0 },
   emptyBtn: {
     marginTop: '12px',
     padding: '12px 24px',
@@ -272,6 +233,9 @@ const styles = {
     textDecoration: 'none',
     fontSize: '0.9rem',
     fontWeight: '700',
+    border: 'none',
+    cursor: 'pointer',
+    fontFamily: 'inherit',
   },
   grid: {
     display: 'grid',

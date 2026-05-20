@@ -13,6 +13,8 @@ import FoundItems from '../pages/FoundItems';
 import FoundItemDetails from '../pages/FoundItemDetails';
 import AddFoundItem from '../pages/AddFoundItem';
 import ViewItems from '../pages/ViewItems';
+import MyItems from '../pages/MyItems';
+import EditItem from '../pages/EditItem';
 import NotFound from '../pages/NotFound';
 import ProtectedRoute from './ProtectedRoute';
 
@@ -62,6 +64,22 @@ const AppRoutes = () => {
             }
           />
           <Route path="/items" element={<ViewItems />} />
+          <Route 
+            path="/my-items" 
+            element={
+              <ProtectedRoute>
+                <MyItems />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/edit-item/:id" 
+            element={
+              <ProtectedRoute>
+                <EditItem />
+              </ProtectedRoute>
+            } 
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

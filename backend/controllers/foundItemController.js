@@ -30,17 +30,41 @@ const createFoundItem = async (req, res) => {
   }
 };
 
-// @desc    Get all found items (public feed)
-// @route   GET /api/found-items
+// @desc    Get all found items (with optional search / filter query params)
+// @route   GET /api/found-items?search=&status=&location=
 // @access  Public
 const getFoundItems = async (req, res) => {
   try {
-    // 1. Fetch all found items, populating reporter name/email, sorted newest first
-    const items = await FoundItem.find()
+    // 1. Extract optional query parameters
+    const { search, status, location } = req.query;
+
+    // 2. Build the dynamic filter object
+    const filter = {};
+
+    // Partial text search across title and description
+    if (search && search.trim()) {
+      filter.$or = [
+        { title:       { $regex: search.trim(), $options: 'i' } },
+        { description: { $regex: search.trim(), $options: 'i' } },
+      ];
+    }
+
+    // Exact match on item status (found | claimed | returned)
+    if (status && status.trim() && status !== 'all') {
+      filter.status = status.trim();
+    }
+
+    // Partial case-insensitive match on location
+    if (location && location.trim()) {
+      filter.location = { $regex: location.trim(), $options: 'i' };
+    }
+
+    // 3. Query with the filter — empty filter {} returns all documents
+    const items = await FoundItem.find(filter)
       .populate('user', 'name email')
       .sort({ createdAt: -1 });
 
-    // 2. Return the array
+    // 4. Return results
     res.status(200).json(items);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -99,8 +123,8 @@ const updateFoundItem = async (req, res) => {
     }
 
     // 2. Verify ownership — compare ObjectId (toString) against req.user.id
-    if (item.user.toString() !== req.user.id.toString()) {
-      return res.status(403).json({ message: 'Not authorized to update this item' });
+    if (item.user.toString() !== req.user.id) {
+      return res.status(401).json({ message: 'Unauthorized' });
     }
 
     // 3. Partial update — fallback to existing values if a field is not provided
@@ -135,8 +159,8 @@ const deleteFoundItem = async (req, res) => {
     }
 
     // 2. Verify ownership
-    if (item.user.toString() !== req.user.id.toString()) {
-      return res.status(403).json({ message: 'Not authorized to delete this item' });
+    if (item.user.toString() !== req.user.id) {
+      return res.status(401).json({ message: 'Unauthorized' });
     }
 
     // 3. Delete the document

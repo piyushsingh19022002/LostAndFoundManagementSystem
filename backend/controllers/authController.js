@@ -88,7 +88,40 @@ const loginUser = async (req, res) => {
   }
 };
 
+// @desc    Get dashboard statistics for the logged-in user
+// @route   GET /api/auth/dashboard-stats
+// @access  Private (Requires token)
+const getDashboardStats = async (req, res) => {
+  try {
+    const Item = require('../models/Item');
+    const FoundItem = require('../models/FoundItem');
+
+    // Count user's specific reports
+    const totalLostItems = await Item.countDocuments({ user: req.user.id });
+    const totalFoundItems = await FoundItem.countDocuments({ user: req.user.id });
+
+    // Retrieve recent reports (limit to 5)
+    const recentLostItems = await Item.find({ user: req.user.id })
+      .sort({ createdAt: -1 })
+      .limit(5);
+      
+    const recentFoundItems = await FoundItem.find({ user: req.user.id })
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    res.status(200).json({
+      totalLostItems,
+      totalFoundItems,
+      recentLostItems,
+      recentFoundItems,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   registerUser,
-  loginUser
+  loginUser,
+  getDashboardStats
 };

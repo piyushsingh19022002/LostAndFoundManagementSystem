@@ -1,111 +1,128 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../services/api';
 import ItemCard from '../components/ItemCard';
 import Loader from '../components/Loader';
+import SearchBar from '../components/SearchBar';
+import CategoryFilter from '../components/CategoryFilter';
+import { LOST_ITEM_CATEGORIES, LOST_CATEGORY_OPTIONS } from '../constants/categories';
+
+
 
 const LostItems = () => {
-  // 1. Component States
-  const [items, setItems] = useState([]);
-  const [filteredItems, setFilteredItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  
-  // Filtering & Searching States
-  const [searchTerm, setSearchTerm] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('All');
+  const [items, setItems]           = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [error, setError]           = useState('');
 
-  // 2. Fetch Items on Mount
-  useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        setLoading(true);
-        const response = await API.get('/lost-items');
-        setItems(response.data);
-        setFilteredItems(response.data);
-        setError('');
-      } catch (err) {
-        console.error('Error fetching items:', err);
-        setError(err.response?.data?.message || 'Failed to fetch items. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Search + filter state — each drives the Axios query params
+  const [search, setSearch]         = useState('');
+  const [category, setCategory]     = useState('All');
+  const [location, setLocation]     = useState('');
 
-    fetchItems();
+  // Debounce timer ref — avoids sending an API request on every keystroke
+  const debounceRef = useRef(null);
+
+  // Core fetch function — accepts current filter values
+  const fetchItems = useCallback(async (searchVal, categoryVal, locationVal) => {
+    try {
+      setLoading(true);
+      setError('');
+
+      // Build query params object — only include non-empty values
+      const params = {};
+      if (searchVal.trim())                              params.search   = searchVal.trim();
+      if (categoryVal && categoryVal !== 'All')          params.category = categoryVal;
+      if (locationVal.trim())                            params.location = locationVal.trim();
+
+      // Axios serialises the params object into: /lost-items?search=phone&location=Delhi
+      const response = await API.get('/lost-items', { params });
+      setItems(response.data);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to fetch items. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  // 3. Search and Filtering Handler
+  // Debounced effect — fires 400 ms after the user stops typing
   useEffect(() => {
-    let result = [...items];
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      fetchItems(search, category, location);
+    }, 400);
 
-    // Filter by Category
-    if (categoryFilter !== 'All') {
-      result = result.filter(item => item.category === categoryFilter);
-    }
+    return () => clearTimeout(debounceRef.current);
+  }, [search, category, location, fetchItems]);
 
-    // Filter by Search Term
-    if (searchTerm.trim() !== '') {
-      const lowerSearch = searchTerm.toLowerCase();
-      result = result.filter(item => 
-        item.title.toLowerCase().includes(lowerSearch) ||
-        item.description.toLowerCase().includes(lowerSearch) ||
-        item.location.toLowerCase().includes(lowerSearch)
-      );
-    }
+  const hasActiveFilters = search.trim() !== '' || category !== 'All' || location.trim() !== '';
 
-    setFilteredItems(result);
-  }, [searchTerm, categoryFilter, items]);
+  const handleClearFilters = () => {
+    setSearch('');
+    setCategory('All');
+    setLocation('');
+  };
 
   return (
     <div style={styles.container}>
       <div style={styles.wrapper}>
-        
+
         {/* Header Block */}
         <div style={styles.header}>
           <div>
             <h1 style={styles.title}>Reported Lost & Found Items</h1>
-            <p style={styles.subtitle}>Browse items reported by our community to help reunite them with their owners.</p>
+            <p style={styles.subtitle}>
+              Browse items reported by our community to help reunite them with their owners.
+            </p>
           </div>
           <Link to="/add-lost-item" style={styles.createBtn}>
-            + Report New Item
+            + Report Lost Item
           </Link>
         </div>
 
-        {/* Filter Controls Bar */}
-        <div style={styles.filterBar}>
-          <div style={styles.searchGroup}>
-            <span style={styles.searchIcon}>🔍</span>
-            <input
-              type="text"
-              placeholder="Search by title, location or description..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={styles.searchInput}
-            />
-          </div>
+        {/* Unified SearchBar Component */}
+        <SearchBar
+          search={search}
+          onSearch={setSearch}
+          location={location}
+          onLocation={setLocation}
+          filterValue={category}
+          onFilter={setCategory}
+          filterOptions={LOST_CATEGORY_OPTIONS}
+          filterLabel="Category filter"
+          placeholder="Search by title or description..."
+          onClear={handleClearFilters}
+          hasActiveFilters={hasActiveFilters}
+        />
 
-          <div style={styles.filterGroup}>
-            <label style={styles.filterLabel}>Category:</label>
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              style={styles.filterSelect}
-            >
-              <option value="All">All Categories</option>
-              <option value="Lost">Lost</option>
-              <option value="Found">Found</option>
-            </select>
-          </div>
-        </div>
+        {/* Category Chip Filter Strip */}
+        <CategoryFilter
+          categories={LOST_ITEM_CATEGORIES}
+          selected={category}
+          onSelect={setCategory}
+          accentColor="rgba(97, 218, 251, 0.15)"
+          accentBorder="rgba(97, 218, 251, 0.5)"
+          accentTextColor="#61dafb"
+          label="Filter lost items by category"
+        />
 
-        {/* Async States and Feed Rendering */}
-        {loading ? (
+        {/* Results Count */}
+        {!loading && !error && (
+          <p style={styles.resultsCount}>
+            {items.length} report{items.length !== 1 ? 's' : ''} found
+            {hasActiveFilters && ' (filtered)'}
+          </p>
+        )}
+
+        {/* Loading State */}
+        {loading && (
           <div style={styles.loaderContainer}>
             <Loader size="50px" color="#61dafb" />
-            <p style={styles.loaderText}>Fetching latest reports...</p>
+            <p style={styles.loaderText}>Searching database...</p>
           </div>
-        ) : error ? (
+        )}
+
+        {/* Error State */}
+        {!loading && error && (
           <div style={styles.errorAlert}>
             <span style={styles.alertIcon}>⚠️</span>
             <div>
@@ -113,27 +130,30 @@ const LostItems = () => {
               <p style={styles.alertMessage}>{error}</p>
             </div>
           </div>
-        ) : filteredItems.length === 0 ? (
+        )}
+
+        {/* Empty State */}
+        {!loading && !error && items.length === 0 && (
           <div style={styles.emptyState}>
             <span style={styles.emptyIcon}>📦</span>
-            <h3 style={styles.emptyTitle}>No lost items found</h3>
+            <h3 style={styles.emptyTitle}>No items found</h3>
             <p style={styles.emptyText}>
-              {searchTerm || categoryFilter !== 'All' 
-                ? 'No items match your active search filters.' 
-                : 'All items are currently resolved or none have been reported yet.'}
+              {hasActiveFilters
+                ? 'No items match your active search filters. Try adjusting or clearing them.'
+                : 'No items have been reported yet. Be the first!'}
             </p>
-            {(searchTerm || categoryFilter !== 'All') && (
-              <button 
-                onClick={() => { setSearchTerm(''); setCategoryFilter('All'); }} 
-                style={styles.resetBtn}
-              >
+            {hasActiveFilters && (
+              <button onClick={handleClearFilters} style={styles.resetBtn}>
                 Clear Filters
               </button>
             )}
           </div>
-        ) : (
+        )}
+
+        {/* Items Grid */}
+        {!loading && !error && items.length > 0 && (
           <div style={styles.grid}>
-            {filteredItems.map((item) => (
+            {items.map((item) => (
               <ItemCard key={item._id} item={item} />
             ))}
           </div>
@@ -143,7 +163,6 @@ const LostItems = () => {
   );
 };
 
-// Premium stylesheet matching custom dashboard styles
 const styles = {
   container: {
     minHeight: '90vh',
@@ -162,7 +181,7 @@ const styles = {
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: '20px',
-    marginBottom: '40px',
+    marginBottom: '32px',
   },
   title: {
     fontSize: '2.5rem',
@@ -188,64 +207,11 @@ const styles = {
     fontWeight: '700',
     fontSize: '0.95rem',
     boxShadow: '0 4px 14px rgba(59, 130, 246, 0.3)',
-    transition: 'transform 0.15s, box-shadow 0.2s',
   },
-  filterBar: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: '20px',
-    flexWrap: 'wrap',
-    backgroundColor: 'rgba(31, 41, 55, 0.4)',
-    border: '1px solid rgba(255, 255, 255, 0.05)',
-    borderRadius: '12px',
-    padding: '16px 24px',
-    marginBottom: '40px',
-  },
-  searchGroup: {
-    display: 'flex',
-    alignItems: 'center',
-    backgroundColor: 'rgba(17, 24, 39, 0.8)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    borderRadius: '8px',
-    padding: '8px 16px',
-    flex: 1,
-    maxWidth: '500px',
-    minWidth: '280px',
-  },
-  searchIcon: {
-    marginRight: '10px',
-    color: '#9ca3af',
-  },
-  searchInput: {
-    backgroundColor: 'transparent',
-    border: 'none',
-    color: '#ffffff',
-    fontSize: '0.95rem',
-    width: '100%',
-    outline: 'none',
-  },
-  filterGroup: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-  },
-  filterLabel: {
-    color: '#9ca3af',
-    fontSize: '0.9rem',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-  },
-  filterSelect: {
-    padding: '8px 16px',
-    backgroundColor: 'rgba(17, 24, 39, 0.8)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    borderRadius: '8px',
-    color: '#ffffff',
-    fontSize: '0.95rem',
-    outline: 'none',
-    cursor: 'pointer',
+  resultsCount: {
+    color: '#6b7280',
+    fontSize: '0.88rem',
+    margin: '-10px 0 20px 0',
   },
   grid: {
     display: 'grid',
@@ -273,9 +239,7 @@ const styles = {
     borderRadius: '12px',
     padding: '24px',
   },
-  alertIcon: {
-    fontSize: '2rem',
-  },
+  alertIcon: { fontSize: '2rem' },
   alertTitle: {
     margin: '0 0 6px 0',
     color: '#ef4444',
@@ -298,15 +262,8 @@ const styles = {
     border: '1px dashed rgba(255, 255, 255, 0.1)',
     borderRadius: '16px',
   },
-  emptyIcon: {
-    fontSize: '4rem',
-    marginBottom: '20px',
-  },
-  emptyTitle: {
-    fontSize: '1.5rem',
-    color: '#ffffff',
-    margin: '0 0 10px 0',
-  },
+  emptyIcon: { fontSize: '4rem', marginBottom: '20px' },
+  emptyTitle: { fontSize: '1.5rem', color: '#ffffff', margin: '0 0 10px 0' },
   emptyText: {
     fontSize: '0.95rem',
     color: '#9ca3af',
@@ -323,8 +280,7 @@ const styles = {
     fontSize: '0.9rem',
     fontWeight: '600',
     cursor: 'pointer',
-    transition: 'background-color 0.2s',
-  }
+  },
 };
 
 export default LostItems;
