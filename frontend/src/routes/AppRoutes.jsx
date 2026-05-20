@@ -6,6 +6,12 @@ import Login from '../pages/Login';
 import Register from '../pages/Register';
 import Dashboard from '../pages/Dashboard';
 import AddItem from '../pages/AddItem';
+import AddLostItem from '../pages/AddLostItem';
+import LostItems from '../pages/LostItems';
+import LostItemDetails from '../pages/LostItemDetails';
+import FoundItems from '../pages/FoundItems';
+import FoundItemDetails from '../pages/FoundItemDetails';
+import AddFoundItem from '../pages/AddFoundItem';
 import ViewItems from '../pages/ViewItems';
 import NotFound from '../pages/NotFound';
 import ProtectedRoute from './ProtectedRoute';
@@ -34,6 +40,26 @@ const AppRoutes = () => {
                 <AddItem />
               </ProtectedRoute>
             } 
+          />
+          <Route 
+            path="/add-lost-item" 
+            element={
+              <ProtectedRoute>
+                <AddLostItem />
+              </ProtectedRoute>
+            } 
+          />
+          <Route path="/lost-items" element={<LostItems />} />
+          <Route path="/lost-items/:id" element={<LostItemDetails />} />
+          <Route path="/found-items" element={<FoundItems />} />
+          <Route path="/found-items/:id" element={<FoundItemDetails />} />
+          <Route
+            path="/add-found-item"
+            element={
+              <ProtectedRoute>
+                <AddFoundItem />
+              </ProtectedRoute>
+            }
           />
           <Route path="/items" element={<ViewItems />} />
           <Route path="*" element={<NotFound />} />

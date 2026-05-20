@@ -29,8 +29,10 @@ const Navbar = () => {
           <>
             <span style={{ marginRight: '10px' }}>Hello, {user.name}</span>
             <Link to="/dashboard" style={{ color: '#61dafb', textDecoration: 'none' }}>Dashboard</Link>
-            <Link to="/items" style={{ color: '#61dafb', textDecoration: 'none' }}>All Items</Link>
-            <Link to="/add-item" style={{ color: '#61dafb', textDecoration: 'none' }}>Report Item</Link>
+            <Link to="/lost-items" style={{ color: '#61dafb', textDecoration: 'none' }}>Lost Items</Link>
+            <Link to="/found-items" style={{ color: '#34d399', textDecoration: 'none' }}>Found Items</Link>
+            <Link to="/add-lost-item" style={{ color: '#61dafb', textDecoration: 'none' }}>Add Lost Item</Link>
+            <Link to="/add-found-item" style={{ color: '#34d399', textDecoration: 'none' }}>Add Found Item</Link>
             <button 
               onClick={handleLogout} 
               style={{
@@ -47,7 +49,8 @@ const Navbar = () => {
           </>
         ) : (
           <>
-            <Link to="/items" style={{ color: '#61dafb', textDecoration: 'none' }}>All Items</Link>
+            <Link to="/lost-items" style={{ color: '#61dafb', textDecoration: 'none' }}>Lost Items</Link>
+            <Link to="/found-items" style={{ color: '#34d399', textDecoration: 'none' }}>Found Items</Link>
             <Link to="/login" style={{ color: 'white', textDecoration: 'none' }}>Login</Link>
             <Link to="/register" style={{
               backgroundColor: '#61dafb',
