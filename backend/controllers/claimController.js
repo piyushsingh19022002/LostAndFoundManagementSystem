@@ -1,6 +1,7 @@
 const ClaimRequest = require('../models/ClaimRequest');
 const Item = require('../models/Item');
 const FoundItem = require('../models/FoundItem');
+const Notification = require('../models/Notification');
 
 // @desc    Create a new claim request
 // @route   POST /api/claims
@@ -56,6 +57,17 @@ const createClaim = async (req, res) => {
       claimer: claimerId,
       owner: ownerId,
       message,
+    });
+
+    // 6. Create notification for item owner
+    await Notification.create({
+      user: ownerId,
+      title: 'New Claim Request',
+      message: `${req.user.name} submitted a claim request for your item "${item.title}".`,
+      type: 'claim_created',
+      relatedClaim: claim._id,
+      relatedItem: itemId,
+      itemModel,
     });
 
     res.status(201).json(claim);
@@ -131,20 +143,71 @@ const updateClaimStatus = async (req, res) => {
     claim.status = status;
     const updatedClaim = await claim.save();
 
-    // Cascading updates on approval
+    // Fetch the related item title for notification message
+    let item;
+    if (claim.itemModel === 'Item') {
+      item = await Item.findById(claim.item);
+    } else {
+      item = await FoundItem.findById(claim.item);
+    }
+    const itemTitle = item ? item.title : 'your item';
+
+    // Cascading updates and notifications on approval/rejection
     if (status === 'approved') {
-      // 1. Reject all other pending claim requests for this same item
+      // 1. Notify the approved claimer
+      await Notification.create({
+        user: claim.claimer,
+        title: 'Claim Approved 🎉',
+        message: `Your claim request for "${itemTitle}" has been approved!`,
+        type: 'claim_approved',
+        relatedClaim: claim._id,
+        relatedItem: claim.item,
+        itemModel: claim.itemModel,
+      });
+
+      // 2. Fetch all other pending claims to create rejection notifications for them
+      const otherClaims = await ClaimRequest.find({
+        item: claim.item,
+        _id: { $ne: claim._id },
+        status: 'pending',
+      });
+
+      // 3. Reject all other pending claim requests for this same item in DB
       await ClaimRequest.updateMany(
         { item: claim.item, _id: { $ne: claim._id }, status: 'pending' },
         { status: 'rejected' }
       );
 
-      // 2. Mark the referenced item as claimed/returned
+      // 4. Create rejection notifications for other claimers
+      for (const otherClaim of otherClaims) {
+        await Notification.create({
+          user: otherClaim.claimer,
+          title: 'Claim Rejected',
+          message: `Your claim request for "${itemTitle}" was rejected because another claim was approved.`,
+          type: 'claim_rejected',
+          relatedClaim: otherClaim._id,
+          relatedItem: claim.item,
+          itemModel: claim.itemModel,
+        });
+      }
+
+      // 5. Mark the referenced item as claimed/returned
       if (claim.itemModel === 'Item') {
         await Item.findByIdAndUpdate(claim.item, { status: 'claimed' });
       } else if (claim.itemModel === 'FoundItem') {
         await FoundItem.findByIdAndUpdate(claim.item, { status: 'claimed' });
       }
+    } else if (status === 'rejected') {
+      // Create rejection notification for the claimer
+      await Notification.create({
+        user: claim.claimer,
+        title: 'Claim Rejected',
+        message: `Your claim request for "${itemTitle}" has been rejected.`,
+        type: 'claim_rejected',
+        relatedClaim: claim._id,
+        relatedItem: claim.item,
+        itemModel: claim.itemModel,
+      });
     }
 
     res.status(200).json(updatedClaim);

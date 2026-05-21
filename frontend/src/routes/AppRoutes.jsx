@@ -20,6 +20,7 @@ import ProtectedRoute from './ProtectedRoute';
 import ClaimItem from '../pages/ClaimItem';
 import MyClaims from '../pages/MyClaims';
 import ReceivedClaims from '../pages/ReceivedClaims';
+import Notifications from '../pages/Notifications';
 
 const AppRoutes = () => {
   return (
@@ -104,6 +105,14 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute>
                 <ReceivedClaims />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/notifications" 
+            element={
+              <ProtectedRoute>
+                <Notifications />
               </ProtectedRoute>
             } 
           />
