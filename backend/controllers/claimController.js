@@ -217,9 +217,36 @@ const updateClaimStatus = async (req, res) => {
   }
 };
 
+const getClaimById = async (req, res) => {
+  try {
+    const claim = await ClaimRequest.findById(req.params.id)
+      .populate({
+        path: 'item',
+        select: 'title description imageUrl location date dateFound category status'
+      })
+      .populate('claimer', 'name email')
+      .populate('owner', 'name email');
+
+    if (!claim) {
+      return res.status(404).json({ message: 'Claim request not found' });
+    }
+
+    // Authorization: Check if caller is claimer or owner
+    if (claim.claimer._id.toString() !== req.user.id && claim.owner._id.toString() !== req.user.id) {
+      return res.status(401).json({ message: 'Unauthorized to view this claim request' });
+    }
+
+    res.status(200).json(claim);
+  } catch (error) {
+    console.error('Get claim by ID error:', error);
+    res.status(500).json({ message: 'Server error retrieving claim details', error: error.message });
+  }
+};
+
 module.exports = {
   createClaim,
   getMyClaims,
   getReceivedClaims,
   updateClaimStatus,
+  getClaimById,
 };

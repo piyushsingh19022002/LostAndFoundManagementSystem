@@ -1,6 +1,7 @@
 services:
 
   backend:
+    build: ./backend
     image: piyushsingh19/lostfound-backend:latest
     container_name: lostfound_backend_prod
 
@@ -20,6 +21,7 @@ services:
       - mern_network
 
   frontend:
+    build: ./frontend
     image: piyushsingh19/lostfound-frontend:latest
     container_name: lostfound_frontend_prod
 

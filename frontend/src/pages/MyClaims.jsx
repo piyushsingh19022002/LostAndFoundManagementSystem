@@ -180,6 +180,14 @@ const MyClaims = () => {
                           )}
                         </div>
                       )}
+
+                      {claim.status !== 'rejected' && (
+                        <div style={styles.chatActionWrapper}>
+                          <Link to={`/chat/${claim._id}`} style={styles.chatBtn}>
+                            💬 Open Chat
+                          </Link>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -429,6 +437,25 @@ const styles = {
     color: '#9ca3af',
     fontSize: '0.95rem',
     fontWeight: '500',
+  },
+  chatActionWrapper: {
+    marginTop: '16px',
+    width: '100%',
+  },
+  chatBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '10px 20px',
+    backgroundColor: 'rgba(97, 218, 251, 0.15)',
+    color: '#61dafb',
+    border: '1px solid rgba(97, 218, 251, 0.3)',
+    borderRadius: '8px',
+    fontWeight: '700',
+    textDecoration: 'none',
+    fontSize: '0.9rem',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
   },
 };
 

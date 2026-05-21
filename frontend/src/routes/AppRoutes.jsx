@@ -21,6 +21,8 @@ import ClaimItem from '../pages/ClaimItem';
 import MyClaims from '../pages/MyClaims';
 import ReceivedClaims from '../pages/ReceivedClaims';
 import Notifications from '../pages/Notifications';
+import Chat from '../pages/Chat';
+
 
 const AppRoutes = () => {
   return (
@@ -113,6 +115,14 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute>
                 <Notifications />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/chat/:claimId" 
+            element={
+              <ProtectedRoute>
+                <Chat />
               </ProtectedRoute>
             } 
           />
