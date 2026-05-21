@@ -26,6 +26,34 @@ const EditItem = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
+  // State for file upload & preview
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setError('Image file is too large. Max size is 5MB.');
+        return;
+      }
+      setImageFile(file);
+      const objectUrl = URL.createObjectURL(file);
+      setImagePreview(objectUrl);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    if (imagePreview) {
+      if (imagePreview.startsWith('blob:')) {
+        URL.revokeObjectURL(imagePreview);
+      }
+      setImagePreview('');
+    }
+  };
+
   useEffect(() => {
     const fetchItemDetails = async () => {
       setLoading(true);
@@ -44,6 +72,9 @@ const EditItem = () => {
             imageUrl: data.imageUrl || '',
             status: data.status || 'found',
           });
+          if (data.imageUrl) {
+            setImagePreview(data.imageUrl);
+          }
         } else {
           response = await API.get(`/lost-items/${id}`);
           const data = response.data;
@@ -56,6 +87,9 @@ const EditItem = () => {
             imageUrl: data.imageUrl || '',
             status: data.status || 'lost',
           });
+          if (data.imageUrl) {
+            setImagePreview(data.imageUrl);
+          }
         }
       } catch (err) {
         console.error('Error fetching item details:', err);
@@ -100,6 +134,22 @@ const EditItem = () => {
     setSaving(true);
 
     try {
+      let uploadedImageUrl = imagePreview ? formData.imageUrl : '';
+      
+      if (imageFile) {
+        setUploadingImage(true);
+        const data = new FormData();
+        data.append('image', imageFile);
+        
+        const uploadResponse = await API.post('/upload', data, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        uploadedImageUrl = uploadResponse.data.imageUrl;
+        setUploadingImage(false);
+      }
+
       const isFound = deducedType === 'found';
       const endpoint = isFound ? `/found-items/${id}` : `/lost-items/${id}`;
       
@@ -110,7 +160,7 @@ const EditItem = () => {
             description: formData.description,
             location: formData.location,
             dateFound: formData.date,
-            imageUrl: formData.imageUrl,
+            imageUrl: uploadedImageUrl,
             status: formData.status,
           }
         : {
@@ -119,7 +169,7 @@ const EditItem = () => {
             category: formData.category,
             location: formData.location,
             date: formData.date,
-            imageUrl: formData.imageUrl,
+            imageUrl: uploadedImageUrl,
             status: formData.status,
           };
 
@@ -127,6 +177,13 @@ const EditItem = () => {
 
       if (response.status === 200) {
         setSuccess(true);
+        
+        // Clean up file objects
+        setImageFile(null);
+        if (imagePreview && imagePreview.startsWith('blob:')) {
+          URL.revokeObjectURL(imagePreview);
+        }
+        
         setTimeout(() => {
           navigate('/my-items');
         }, 1500);
@@ -134,6 +191,7 @@ const EditItem = () => {
     } catch (err) {
       console.error('Error saving item changes:', err);
       setError(err.response?.data?.message || 'Failed to update report. Please verify authorization.');
+      setUploadingImage(false);
     } finally {
       setSaving(false);
     }
@@ -255,18 +313,42 @@ const EditItem = () => {
             </div>
           </div>
 
-          {/* Form Group: Image URL */}
+          {/* Form Group: Image File Upload */}
           <div style={styles.formGroup}>
-            <label style={styles.label} htmlFor="imageUrl">Image URL (Optional)</label>
-            <input
-              id="imageUrl"
-              type="url"
-              name="imageUrl"
-              value={formData.imageUrl}
-              onChange={handleChange}
-              style={styles.input}
-              disabled={saving}
-            />
+            <label style={styles.label}>Item Image (Upload File)</label>
+            <div style={styles.uploadContainer}>
+              <input
+                id="imageUpload"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                style={styles.fileInput}
+                disabled={saving || uploadingImage}
+              />
+              <label htmlFor="imageUpload" style={styles.uploadBox}>
+                <span style={styles.uploadIcon}>📷</span>
+                <span style={styles.uploadText}>
+                  {imageFile ? 'Change Selected File' : 'Choose New Image / Photo'}
+                </span>
+              </label>
+              {imageFile && (
+                <div style={styles.fileName}>{imageFile.name}</div>
+              )}
+            </div>
+            
+            {imagePreview && (
+              <div style={styles.previewWrapper}>
+                <img src={imagePreview} alt="Preview" style={styles.imagePreview} />
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  style={styles.removeImageBtn}
+                  disabled={saving || uploadingImage}
+                >
+                  ✕ Remove Image
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Form Group: Description */}
@@ -463,6 +545,72 @@ const styles = {
     color: '#f3f4f6',
     fontSize: '0.9rem',
     marginBottom: '24px',
+  },
+  uploadContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px',
+  },
+  fileInput: {
+    display: 'none',
+  },
+  uploadBox: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '10px',
+    padding: '14px',
+    border: '2px dashed rgba(255, 255, 255, 0.15)',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    backgroundColor: 'rgba(17, 24, 39, 0.4)',
+    color: '#e5e7eb',
+    fontSize: '0.95rem',
+    fontWeight: '600',
+    transition: 'all 0.2s ease',
+    textAlign: 'center',
+  },
+  uploadIcon: {
+    fontSize: '1.2rem',
+  },
+  uploadText: {
+    letterSpacing: '0.02em',
+  },
+  fileName: {
+    fontSize: '0.85rem',
+    color: '#9ca3af',
+    wordBreak: 'break-all',
+    paddingLeft: '4px',
+  },
+  previewWrapper: {
+    position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '12px',
+    marginTop: '12px',
+    padding: '12px',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    borderRadius: '12px',
+    backgroundColor: 'rgba(17, 24, 39, 0.6)',
+  },
+  imagePreview: {
+    width: '100%',
+    maxHeight: '220px',
+    objectFit: 'contain',
+    borderRadius: '8px',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+  },
+  removeImageBtn: {
+    padding: '6px 12px',
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+    border: '1px solid rgba(239, 68, 68, 0.3)',
+    borderRadius: '6px',
+    color: '#fca5a5',
+    fontSize: '0.85rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.15s ease',
   }
 };
 

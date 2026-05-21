@@ -18,8 +18,34 @@ const AddLostItem = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
+  // State for file upload & preview
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+
   const navigate = useNavigate();
   const { title, description, category, location, date, imageUrl } = formData;
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setError('Image file is too large. Max size is 5MB.');
+        return;
+      }
+      setImageFile(file);
+      const objectUrl = URL.createObjectURL(file);
+      setImagePreview(objectUrl);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+      setImagePreview('');
+    }
+  };
 
   // 2. Controlled Inputs Handler
   const handleChange = (e) => {
@@ -59,8 +85,29 @@ const AddLostItem = () => {
     setLoading(true);
 
     try {
+      let uploadedImageUrl = '';
+      if (imageFile) {
+        setUploadingImage(true);
+        const data = new FormData();
+        data.append('image', imageFile);
+        
+        const uploadResponse = await API.post('/upload', data, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        
+        uploadedImageUrl = uploadResponse.data.imageUrl;
+        setUploadingImage(false);
+      }
+
+      const finalItemData = {
+        ...formData,
+        imageUrl: uploadedImageUrl || imageUrl,
+      };
+
       // Axios request - authorization token is automatically attached by API interceptor in services/api.js
-      const response = await API.post('/lost-items', formData);
+      const response = await API.post('/lost-items', finalItemData);
       
       if (response.status === 201 || response.status === 200) {
         setSuccess(true);
@@ -72,6 +119,11 @@ const AddLostItem = () => {
           date: '',
           imageUrl: ''
         });
+        setImageFile(null);
+        if (imagePreview) {
+          URL.revokeObjectURL(imagePreview);
+          setImagePreview('');
+        }
         
         // Short timeout for visual feedback before redirecting
         setTimeout(() => {
@@ -81,6 +133,7 @@ const AddLostItem = () => {
     } catch (err) {
       console.error('Error submitting form:', err);
       setError(err.response?.data?.message || 'Something went wrong. Please try again.');
+      setUploadingImage(false);
     } finally {
       setLoading(false);
     }
@@ -173,19 +226,42 @@ const AddLostItem = () => {
             />
           </div>
 
-          {/* Form Group: Image URL */}
+          {/* Form Group: Image File Upload */}
           <div style={styles.formGroup}>
-            <label style={styles.label} htmlFor="imageUrl">Image URL (Optional)</label>
-            <input
-              id="imageUrl"
-              type="url"
-              name="imageUrl"
-              value={imageUrl}
-              onChange={handleChange}
-              placeholder="e.g. https://example.com/image.jpg"
-              style={styles.input}
-              disabled={loading}
-            />
+            <label style={styles.label}>Item Image (Upload File)</label>
+            <div style={styles.uploadContainer}>
+              <input
+                id="imageUpload"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                style={styles.fileInput}
+                disabled={loading || uploadingImage}
+              />
+              <label htmlFor="imageUpload" style={styles.uploadBox}>
+                <span style={styles.uploadIcon}>📷</span>
+                <span style={styles.uploadText}>
+                  {imageFile ? 'Change Selected File' : 'Choose Image / Photo'}
+                </span>
+              </label>
+              {imageFile && (
+                <div style={styles.fileName}>{imageFile.name}</div>
+              )}
+            </div>
+            
+            {imagePreview && (
+              <div style={styles.previewWrapper}>
+                <img src={imagePreview} alt="Preview" style={styles.imagePreview} />
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  style={styles.removeImageBtn}
+                  disabled={loading || uploadingImage}
+                >
+                  ✕ Remove Image
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Form Group: Description */}
@@ -397,6 +473,72 @@ const styles = {
     fontSize: '0.9rem',
     color: '#f3f4f6',
     fontWeight: '500',
+  },
+  uploadContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px',
+  },
+  fileInput: {
+    display: 'none',
+  },
+  uploadBox: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '10px',
+    padding: '14px',
+    border: '2px dashed rgba(255, 255, 255, 0.15)',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    backgroundColor: 'rgba(17, 24, 39, 0.4)',
+    color: '#e5e7eb',
+    fontSize: '0.95rem',
+    fontWeight: '600',
+    transition: 'all 0.2s ease',
+    textAlign: 'center',
+  },
+  uploadIcon: {
+    fontSize: '1.2rem',
+  },
+  uploadText: {
+    letterSpacing: '0.02em',
+  },
+  fileName: {
+    fontSize: '0.85rem',
+    color: '#9ca3af',
+    wordBreak: 'break-all',
+    paddingLeft: '4px',
+  },
+  previewWrapper: {
+    position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '12px',
+    marginTop: '12px',
+    padding: '12px',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    borderRadius: '12px',
+    backgroundColor: 'rgba(17, 24, 39, 0.6)',
+  },
+  imagePreview: {
+    width: '100%',
+    maxHeight: '220px',
+    objectFit: 'contain',
+    borderRadius: '8px',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+  },
+  removeImageBtn: {
+    padding: '6px 12px',
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+    border: '1px solid rgba(239, 68, 68, 0.3)',
+    borderRadius: '6px',
+    color: '#fca5a5',
+    fontSize: '0.85rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.15s ease',
   }
 };
 

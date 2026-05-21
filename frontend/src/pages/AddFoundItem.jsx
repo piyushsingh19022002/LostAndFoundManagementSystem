@@ -18,6 +18,32 @@ const AddFoundItem = () => {
   const [error, setError]     = useState('');
   const [success, setSuccess] = useState('');
 
+  // State for file upload & preview
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setError('Image file is too large. Max size is 5MB.');
+        return;
+      }
+      setImageFile(file);
+      const objectUrl = URL.createObjectURL(file);
+      setImagePreview(objectUrl);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+      setImagePreview('');
+    }
+  };
+
   // Generic handler — works for all inputs because it reads event.target.name
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -41,14 +67,45 @@ const AddFoundItem = () => {
       return setError('Description must be at least 10 characters.');
     }
 
+    setLoading(true);
+
     try {
-      setLoading(true);
+      let uploadedImageUrl = '';
+      if (imageFile) {
+        setUploadingImage(true);
+        const data = new FormData();
+        data.append('image', imageFile);
+        
+        const uploadResponse = await API.post('/upload', data, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        
+        uploadedImageUrl = uploadResponse.data.imageUrl;
+        setUploadingImage(false);
+      }
+
+      const finalItemData = {
+        ...formData,
+        imageUrl: uploadedImageUrl || formData.imageUrl,
+      };
+
       // Axios interceptor automatically attaches the JWT from localStorage
-      await API.post('/found-items', formData);
+      await API.post('/found-items', finalItemData);
       setSuccess('✅ Found item reported successfully! Redirecting to the feed...');
+      
+      // Clean up file objects
+      setImageFile(null);
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+        setImagePreview('');
+      }
+      
       setTimeout(() => navigate('/found-items'), 2000);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to submit the report. Please try again.');
+      setUploadingImage(false);
     } finally {
       setLoading(false);
     }
@@ -138,18 +195,42 @@ const AddFoundItem = () => {
             </div>
           </div>
 
+          {/* Form Group: Image File Upload */}
           <div style={styles.formGroup}>
-            <label style={styles.label} htmlFor="imageUrl">Image URL <span style={styles.optional}>(optional)</span></label>
-            <input
-              id="imageUrl"
-              name="imageUrl"
-              type="url"
-              value={formData.imageUrl}
-              onChange={handleChange}
-              placeholder="https://example.com/photo.jpg"
-              style={styles.input}
-              disabled={loading}
-            />
+            <label style={styles.label}>Item Image (Upload File)</label>
+            <div style={styles.uploadContainer}>
+              <input
+                id="imageUpload"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                style={styles.fileInput}
+                disabled={loading || uploadingImage}
+              />
+              <label htmlFor="imageUpload" style={styles.uploadBox}>
+                <span style={styles.uploadIcon}>📷</span>
+                <span style={styles.uploadText}>
+                  {imageFile ? 'Change Selected File' : 'Choose Image / Photo'}
+                </span>
+              </label>
+              {imageFile && (
+                <div style={styles.fileName}>{imageFile.name}</div>
+              )}
+            </div>
+            
+            {imagePreview && (
+              <div style={styles.previewWrapper}>
+                <img src={imagePreview} alt="Preview" style={styles.imagePreview} />
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  style={styles.removeImageBtn}
+                  disabled={loading || uploadingImage}
+                >
+                  ✕ Remove Image
+                </button>
+              </div>
+            )}
           </div>
 
           <button type="submit" style={styles.submitBtn} disabled={loading}>
@@ -334,6 +415,72 @@ const styles = {
     textDecoration: 'none',
     fontSize: '0.9rem',
     fontWeight: '600',
+  },
+  uploadContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px',
+  },
+  fileInput: {
+    display: 'none',
+  },
+  uploadBox: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '10px',
+    padding: '14px',
+    border: '2px dashed rgba(16, 185, 129, 0.2)',
+    borderRadius: '10px',
+    cursor: 'pointer',
+    backgroundColor: 'rgba(17, 24, 39, 0.4)',
+    color: '#e5e7eb',
+    fontSize: '0.95rem',
+    fontWeight: '600',
+    transition: 'all 0.2s ease',
+    textAlign: 'center',
+  },
+  uploadIcon: {
+    fontSize: '1.2rem',
+  },
+  uploadText: {
+    letterSpacing: '0.02em',
+  },
+  fileName: {
+    fontSize: '0.85rem',
+    color: '#9ca3af',
+    wordBreak: 'break-all',
+    paddingLeft: '4px',
+  },
+  previewWrapper: {
+    position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '12px',
+    marginTop: '12px',
+    padding: '12px',
+    border: '1px solid rgba(16, 185, 129, 0.15)',
+    borderRadius: '12px',
+    backgroundColor: 'rgba(17, 24, 39, 0.6)',
+  },
+  imagePreview: {
+    width: '100%',
+    maxHeight: '220px',
+    objectFit: 'contain',
+    borderRadius: '8px',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+  },
+  removeImageBtn: {
+    padding: '6px 12px',
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+    border: '1px solid rgba(239, 68, 68, 0.3)',
+    borderRadius: '6px',
+    color: '#fca5a5',
+    fontSize: '0.85rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.15s ease',
   },
 };
 
