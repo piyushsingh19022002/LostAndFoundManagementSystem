@@ -112,6 +112,14 @@ const LostItemDetails = () => {
     day: 'numeric',
   });
 
+  const statusLabels = { lost: '🟢 Lost', found: '🔵 Found', claimed: '🟡 Claimed' };
+  const statusColors = {
+    lost:     { color: '#f87171', bg: 'rgba(239, 68, 68, 0.12)', border: 'rgba(239, 68, 68, 0.3)' },
+    found:    { color: '#61dafb', bg: 'rgba(97, 218, 251, 0.12)', border: 'rgba(97, 218, 251, 0.3)' },
+    claimed:  { color: '#fbbf24', bg: 'rgba(245, 158, 11, 0.12)', border: 'rgba(245, 158, 11, 0.3)' },
+  };
+  const sc = statusColors[item.status] || statusColors.lost;
+
   return (
     <div style={styles.container}>
       <div style={styles.wrapper}>
@@ -137,7 +145,7 @@ const LostItemDetails = () => {
 
           {/* Right Column: Metadata Section */}
           <div style={styles.detailsColumn}>
-            <div style={styles.header}>
+            <div style={styles.badgeRow}>
               <span style={{
                 ...styles.badge,
                 backgroundColor: isLost ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)',
@@ -146,7 +154,14 @@ const LostItemDetails = () => {
               }}>
                 {item.category}
               </span>
-              <span style={styles.statusText}>● Active Report</span>
+              <span style={{
+                ...styles.statusBadge,
+                backgroundColor: sc.bg,
+                color: sc.color,
+                border: `1px solid ${sc.border}`
+              }}>
+                {statusLabels[item.status] || item.status}
+              </span>
             </div>
 
             <h1 style={styles.title}>{item.title}</h1>
@@ -205,6 +220,30 @@ const LostItemDetails = () => {
                 <button onClick={handleDelete} style={styles.deleteBtn}>
                   🗑️ Delete Report
                 </button>
+              </div>
+            )}
+
+            {/* Non-Owner Claim Button */}
+            {!isOwner && (
+              <div style={styles.actionRow}>
+                {item.status === 'claimed' ? (
+                  <button disabled style={styles.disabledBtn}>
+                    🔒 Already Claimed
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      if (!currentUser) {
+                        navigate('/login', { state: { from: `/lost-items/${id}` } });
+                      } else {
+                        navigate(`/claim/${id}?type=lost`);
+                      }
+                    }}
+                    style={styles.claimBtn}
+                  >
+                    🤝 Claim Item / Contact Owner
+                  </button>
+                )}
               </div>
             )}
 
@@ -431,6 +470,56 @@ const styles = {
     fontWeight: '700',
     cursor: 'pointer',
     transition: 'background-color 0.2s',
+  },
+  claimBtn: {
+    display: 'block',
+    width: '100%',
+    textAlign: 'center',
+    padding: '14px',
+    borderRadius: '8px',
+    backgroundColor: '#61dafb',
+    color: '#0b1329',
+    textDecoration: 'none',
+    fontSize: '1rem',
+    fontWeight: '700',
+    border: 'none',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    boxShadow: '0 4px 12px rgba(97, 218, 251, 0.2)',
+  },
+  disabledBtn: {
+    display: 'block',
+    width: '100%',
+    textAlign: 'center',
+    padding: '14px',
+    borderRadius: '8px',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    color: '#9ca3af',
+    textDecoration: 'none',
+    fontSize: '1rem',
+    fontWeight: '700',
+    border: '1px solid rgba(255, 255, 255, 0.05)',
+    cursor: 'not-allowed',
+  },
+  statusBadge: {
+    padding: '6px 14px',
+    borderRadius: '20px',
+    fontSize: '0.75rem',
+    fontWeight: '700',
+  },
+  categoryBadge: {
+    padding: '6px 14px',
+    borderRadius: '20px',
+    fontSize: '0.75rem',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+  },
+  badgeRow: {
+    display: 'flex',
+    gap: '10px',
+    flexWrap: 'wrap',
+    marginBottom: '20px',
   },
   loaderContainer: {
     display: 'flex',

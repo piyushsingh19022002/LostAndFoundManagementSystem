@@ -196,6 +196,30 @@ const FoundItemDetails = () => {
                 <button onClick={handleDelete} style={styles.deleteBtn}>🗑️ Delete Report</button>
               </div>
             )}
+
+            {/* Non-Owner Claim Button */}
+            {!isOwner && (
+              <div style={styles.actionRow}>
+                {item.status === 'claimed' || item.status === 'returned' ? (
+                  <button disabled style={styles.disabledBtn}>
+                    🔒 Already Resolved / Claimed
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      if (!currentUser) {
+                        navigate('/login', { state: { from: `/found-items/${id}` } });
+                      } else {
+                        navigate(`/claim/${id}?type=found`);
+                      }
+                    }}
+                    style={styles.claimBtn}
+                  >
+                    🤝 Claim Item
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -265,8 +289,38 @@ const styles = {
   fieldValue: { fontSize: '0.9rem', color: '#ffffff', fontWeight: '600', margin: 0 },
   emailLink: { fontSize: '0.9rem', color: '#34d399', textDecoration: 'none', fontWeight: '600' },
   actionRow: { display: 'flex', gap: '16px', marginTop: '24px' },
-  editBtn: { flex: 1, padding: '12px', textAlign: 'center', borderRadius: '8px', backgroundColor: 'rgba(255,255,255,0.05)', color: '#ffffff', textDecoration: 'none', fontSize: '0.95rem', fontWeight: '700', border: '1px solid rgba(255,255,255,0.1)' },
+  editBtn: { flex: 1, padding: '12px', textAlign: 'center', borderRadius: '8px', backgroundColor: 'rgba(255, 255, 255, 0.05)', color: '#ffffff', textDecoration: 'none', fontSize: '0.95rem', fontWeight: '700', border: '1px solid rgba(255, 255, 255, 0.1)' },
   deleteBtn: { flex: 1, padding: '12px', borderRadius: '8px', backgroundColor: 'rgba(239, 68, 68, 0.12)', color: '#f87171', border: '1px solid rgba(239, 68, 68, 0.25)', fontSize: '0.95rem', fontWeight: '700', cursor: 'pointer' },
+  claimBtn: {
+    display: 'block',
+    width: '100%',
+    textAlign: 'center',
+    padding: '14px',
+    borderRadius: '8px',
+    backgroundColor: '#34d399',
+    color: '#064e3b',
+    textDecoration: 'none',
+    fontSize: '1rem',
+    fontWeight: '700',
+    border: 'none',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    boxShadow: '0 4px 12px rgba(52, 211, 153, 0.2)',
+  },
+  disabledBtn: {
+    display: 'block',
+    width: '100%',
+    textAlign: 'center',
+    padding: '14px',
+    borderRadius: '8px',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    color: '#9ca3af',
+    textDecoration: 'none',
+    fontSize: '1rem',
+    fontWeight: '700',
+    border: '1px solid rgba(255, 255, 255, 0.05)',
+    cursor: 'not-allowed',
+  },
   loaderContainer: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', background: 'radial-gradient(circle at 30% 60%, #064e3b 0%, #111827 60%)' },
   loaderText: { marginTop: '16px', color: '#9ca3af', fontSize: '0.95rem' },
   errorAlert: { display: 'flex', gap: '16px', backgroundColor: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.18)', borderRadius: '12px', padding: '30px', maxWidth: '500px', width: '100%' },

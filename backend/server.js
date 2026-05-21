@@ -22,6 +22,7 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/lost-items', require('./routes/lostItemRoutes'));
 app.use('/api/found-items', require('./routes/foundItemRoutes'));
 app.use('/api/upload', require('./routes/uploadRoutes'));
+app.use('/api/claims', require('./routes/claimRoutes'));
 
 const PORT = process.env.PORT || 5000;
 

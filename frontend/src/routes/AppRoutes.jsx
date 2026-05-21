@@ -17,6 +17,9 @@ import MyItems from '../pages/MyItems';
 import EditItem from '../pages/EditItem';
 import NotFound from '../pages/NotFound';
 import ProtectedRoute from './ProtectedRoute';
+import ClaimItem from '../pages/ClaimItem';
+import MyClaims from '../pages/MyClaims';
+import ReceivedClaims from '../pages/ReceivedClaims';
 
 const AppRoutes = () => {
   return (
@@ -77,6 +80,30 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute>
                 <EditItem />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/claim/:id" 
+            element={
+              <ProtectedRoute>
+                <ClaimItem />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/my-claims" 
+            element={
+              <ProtectedRoute>
+                <MyClaims />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/received-claims" 
+            element={
+              <ProtectedRoute>
+                <ReceivedClaims />
               </ProtectedRoute>
             } 
           />
