@@ -24,7 +24,7 @@ const io = new Server(server, {
   },
 });
 
-// Middleware cors
+// Middleware cors test
 app.use(cors());
 app.use(express.json());
 
