@@ -22,6 +22,8 @@ import MyClaims from '../pages/MyClaims';
 import ReceivedClaims from '../pages/ReceivedClaims';
 import Notifications from '../pages/Notifications';
 import Chat from '../pages/Chat';
+import ForgotPassword from '../pages/ForgotPassword';
+import ResetPassword from '../pages/ResetPassword';
 
 
 const AppRoutes = () => {
@@ -33,6 +35,8 @@ const AppRoutes = () => {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route 
             path="/dashboard" 
             element={

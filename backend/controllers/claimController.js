@@ -2,6 +2,7 @@ const ClaimRequest = require('../models/ClaimRequest');
 const Item = require('../models/Item');
 const FoundItem = require('../models/FoundItem');
 const Notification = require('../models/Notification');
+const User = require('../models/User');
 
 // @desc    Create a new claim request
 // @route   POST /api/claims
@@ -69,6 +70,16 @@ const createClaim = async (req, res) => {
       relatedItem: itemId,
       itemModel,
     });
+
+    // Send email to owner asynchronously
+    const ownerUser = await User.findById(ownerId);
+    if (ownerUser) {
+      const { sendClaimRequestEmail } = require('../services/emailService');
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      const dashboardLink = `${frontendUrl}/received-claims`;
+      sendClaimRequestEmail(ownerUser, req.user, item.title, message, dashboardLink)
+        .catch(err => console.error('Failed to send claim request email:', err));
+    }
 
     res.status(201).json(claim);
   } catch (error) {
@@ -165,6 +176,16 @@ const updateClaimStatus = async (req, res) => {
         itemModel: claim.itemModel,
       });
 
+      // Send email to approved claimer asynchronously
+      const claimerUser = await User.findById(claim.claimer);
+      if (claimerUser) {
+        const { sendClaimStatusEmail } = require('../services/emailService');
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        const chatLink = `${frontendUrl}/chat/${claim._id}`;
+        sendClaimStatusEmail(claimerUser, itemTitle, 'approved', chatLink)
+          .catch(err => console.error('Failed to send claim approval email:', err));
+      }
+
       // 2. Fetch all other pending claims to create rejection notifications for them
       const otherClaims = await ClaimRequest.find({
         item: claim.item,
@@ -189,6 +210,16 @@ const updateClaimStatus = async (req, res) => {
           relatedItem: claim.item,
           itemModel: claim.itemModel,
         });
+
+        // Send email to rejected claimer asynchronously
+        const otherClaimerUser = await User.findById(otherClaim.claimer);
+        if (otherClaimerUser) {
+          const { sendClaimStatusEmail } = require('../services/emailService');
+          const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+          const dashboardLink = `${frontendUrl}/my-claims`;
+          sendClaimStatusEmail(otherClaimerUser, itemTitle, 'rejected', dashboardLink)
+            .catch(err => console.error('Failed to send claim rejection email:', err));
+        }
       }
 
       // 5. Mark the referenced item as claimed/returned
@@ -208,6 +239,16 @@ const updateClaimStatus = async (req, res) => {
         relatedItem: claim.item,
         itemModel: claim.itemModel,
       });
+
+      // Send email to rejected claimer asynchronously
+      const claimerUser = await User.findById(claim.claimer);
+      if (claimerUser) {
+        const { sendClaimStatusEmail } = require('../services/emailService');
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        const dashboardLink = `${frontendUrl}/my-claims`;
+        sendClaimStatusEmail(claimerUser, itemTitle, 'rejected', dashboardLink)
+          .catch(err => console.error('Failed to send claim rejection email:', err));
+      }
     }
 
     res.status(200).json(updatedClaim);

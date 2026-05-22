@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
 // Helper function to generate JWT
 const generateToken = (id) => {
@@ -41,6 +42,10 @@ const registerUser = async (req, res) => {
 
     // 5. Send response with token
     if (user) {
+      // Send welcome onboarding email asynchronously
+      const { sendWelcomeEmail } = require('../services/emailService');
+      sendWelcomeEmail(user).catch(err => console.error('Failed to send welcome email:', err));
+
       res.status(201).json({
         _id: user.id,
         name: user.name,
@@ -120,8 +125,99 @@ const getDashboardStats = async (req, res) => {
   }
 };
 
+// @desc    Forgot password
+// @route   POST /api/auth/forgot-password
+// @access  Public
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: 'Please add an email address' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      // Return 200 to prevent user enumeration security issues
+      return res.status(200).json({ message: 'If an account exists with that email, a password reset link has been sent.' });
+    }
+
+    // Generate secure random token
+    const rawToken = crypto.randomBytes(20).toString('hex');
+
+    // Hash token and set to resetPasswordToken field
+    const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+
+    user.resetPasswordToken = hashedToken;
+    // Expiration: 10 minutes from now
+    user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+
+    await user.save();
+
+    // Reset URL
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const resetUrl = `${frontendUrl}/reset-password/${rawToken}`;
+
+    // Send email
+    const { sendPasswordResetEmail } = require('../services/emailService');
+    await sendPasswordResetEmail(user, resetUrl);
+
+    res.status(200).json({ message: 'Password reset link sent to your email.' });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ message: 'Server error processing forgot password request' });
+  }
+};
+
+// @desc    Reset password
+// @route   PUT /api/auth/reset-password/:token
+// @access  Public
+const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({ message: 'Please provide a new password' });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters' });
+    }
+
+    // Hash token received in URL parameters
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    // Find user with matching token and valid expiration
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpire: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid or expired password reset token' });
+    }
+
+    // Hash the new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Update password and clear reset fields
+    user.password = hashedPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+
+    await user.save();
+
+    res.status(200).json({ message: 'Password updated successfully. You can now login.' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ message: 'Server error resetting password' });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
-  getDashboardStats
+  getDashboardStats,
+  forgotPassword,
+  resetPassword,
 };

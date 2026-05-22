@@ -3,13 +3,17 @@ const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
 const jwt = require('jsonwebtoken');
-require('dotenv').config();
+require('dotenv').config({ override: true });
 const connectDB = require('./config/db');
-const ClaimRequest = require('./models/ClaimRequest');
-const Message = require('./models/Message');
 
 // Connect to database
 connectDB();
+
+// Initialize and verify Email service on server startup
+require('./services/emailService');
+
+const ClaimRequest = require('./models/ClaimRequest');
+const Message = require('./models/Message');
 
 const app = express();
 const server = http.createServer(app);

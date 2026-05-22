@@ -65,8 +65,13 @@ const Login = () => {
           value={password}
           onChange={onChange}
           required
-          style={{ marginBottom: '10px', padding: '8px' }}
+          style={{ marginBottom: '5px', padding: '8px' }}
         />
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '15px' }}>
+          <Link to="/forgot-password" style={{ fontSize: '0.85rem', color: '#61dafb', textDecoration: 'none' }}>
+            Forgot Password?
+          </Link>
+        </div>
         <button type="submit" style={{ padding: '10px' }}>Login</button>
       </form>
       <div style={{ marginTop: '10px' }}>
