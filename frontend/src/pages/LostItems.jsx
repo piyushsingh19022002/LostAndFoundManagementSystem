@@ -2,12 +2,10 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../services/api';
 import ItemCard from '../components/ItemCard';
-import Loader from '../components/Loader';
+import ItemCardSkeleton from '../components/ItemCardSkeleton';
 import SearchBar from '../components/SearchBar';
 import CategoryFilter from '../components/CategoryFilter';
 import { LOST_ITEM_CATEGORIES, LOST_CATEGORY_OPTIONS } from '../constants/categories';
-
-
 
 const LostItems = () => {
   const [items, setItems]           = useState([]);
@@ -19,24 +17,35 @@ const LostItems = () => {
   const [category, setCategory]     = useState('All');
   const [location, setLocation]     = useState('');
 
+  // Pagination state
+  const [page, setPage]             = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const LIMIT = 9; // Grid-friendly size (3 columns x 3 rows)
+
   // Debounce timer ref — avoids sending an API request on every keystroke
   const debounceRef = useRef(null);
 
   // Core fetch function — accepts current filter values
-  const fetchItems = useCallback(async (searchVal, categoryVal, locationVal) => {
+  const fetchItems = useCallback(async (searchVal, categoryVal, locationVal, pageVal) => {
     try {
       setLoading(true);
       setError('');
 
       // Build query params object — only include non-empty values
-      const params = {};
+      const params = {
+        page: pageVal,
+        limit: LIMIT
+      };
       if (searchVal.trim())                              params.search   = searchVal.trim();
       if (categoryVal && categoryVal !== 'All')          params.category = categoryVal;
       if (locationVal.trim())                            params.location = locationVal.trim();
 
-      // Axios serialises the params object into: /lost-items?search=phone&location=Delhi
+      // Axios serialises the params object
       const response = await API.get('/lost-items', { params });
-      setItems(response.data);
+      setItems(response.data.items || []);
+      setTotalPages(response.data.totalPages || 1);
+      setTotalItems(response.data.totalItems || 0);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch items. Please try again.');
     } finally {
@@ -44,15 +53,15 @@ const LostItems = () => {
     }
   }, []);
 
-  // Debounced effect — fires 400 ms after the user stops typing
+  // Debounced effect — fires 300 ms after user updates state
   useEffect(() => {
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      fetchItems(search, category, location);
-    }, 400);
+      fetchItems(search, category, location, page);
+    }, 300);
 
     return () => clearTimeout(debounceRef.current);
-  }, [search, category, location, fetchItems]);
+  }, [search, category, location, page, fetchItems]);
 
   const hasActiveFilters = search.trim() !== '' || category !== 'All' || location.trim() !== '';
 
@@ -60,6 +69,12 @@ const LostItems = () => {
     setSearch('');
     setCategory('All');
     setLocation('');
+    setPage(1);
+  };
+
+  const handleFilterChange = (setter) => (val) => {
+    setter(val);
+    setPage(1); // Reset back to page 1 on filter changes
   };
 
   return (
@@ -82,11 +97,11 @@ const LostItems = () => {
         {/* Unified SearchBar Component */}
         <SearchBar
           search={search}
-          onSearch={setSearch}
+          onSearch={handleFilterChange(setSearch)}
           location={location}
-          onLocation={setLocation}
+          onLocation={handleFilterChange(setLocation)}
           filterValue={category}
-          onFilter={setCategory}
+          onFilter={handleFilterChange(setCategory)}
           filterOptions={LOST_CATEGORY_OPTIONS}
           filterLabel="Category filter"
           placeholder="Search by title or description..."
@@ -98,7 +113,7 @@ const LostItems = () => {
         <CategoryFilter
           categories={LOST_ITEM_CATEGORIES}
           selected={category}
-          onSelect={setCategory}
+          onSelect={handleFilterChange(setCategory)}
           accentColor="rgba(97, 218, 251, 0.15)"
           accentBorder="rgba(97, 218, 251, 0.5)"
           accentTextColor="#61dafb"
@@ -108,16 +123,17 @@ const LostItems = () => {
         {/* Results Count */}
         {!loading && !error && (
           <p style={styles.resultsCount}>
-            {items.length} report{items.length !== 1 ? 's' : ''} found
+            {totalItems} report{totalItems !== 1 ? 's' : ''} found
             {hasActiveFilters && ' (filtered)'}
           </p>
         )}
 
-        {/* Loading State */}
+        {/* Loading State - Grid of Skeleton Cards */}
         {loading && (
-          <div style={styles.loaderContainer}>
-            <Loader size="50px" color="#61dafb" />
-            <p style={styles.loaderText}>Searching database...</p>
+          <div style={styles.grid}>
+            {Array.from({ length: 6 }).map((_, idx) => (
+              <ItemCardSkeleton key={idx} />
+            ))}
           </div>
         )}
 
@@ -152,11 +168,61 @@ const LostItems = () => {
 
         {/* Items Grid */}
         {!loading && !error && items.length > 0 && (
-          <div style={styles.grid}>
-            {items.map((item) => (
-              <ItemCard key={item._id} item={item} />
-            ))}
-          </div>
+          <>
+            <div style={styles.grid}>
+              {items.map((item) => (
+                <ItemCard key={item._id} item={item} />
+              ))}
+            </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div style={styles.paginationContainer}>
+                <button
+                  onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                  disabled={page === 1}
+                  style={{
+                    ...styles.pageBtn,
+                    ...(page === 1 ? styles.disabledPageBtn : {})
+                  }}
+                  aria-label="Previous Page"
+                >
+                  &larr; Previous
+                </button>
+
+                {Array.from({ length: totalPages }).map((_, idx) => {
+                  const pageNum = idx + 1;
+                  const isActive = page === pageNum;
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setPage(pageNum)}
+                      style={{
+                        ...styles.pageBtn,
+                        ...(isActive ? styles.activePageBtn : {})
+                      }}
+                      aria-label={`Page ${pageNum}`}
+                      aria-current={isActive ? 'page' : undefined}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+
+                <button
+                  onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={page === totalPages}
+                  style={{
+                    ...styles.pageBtn,
+                    ...(page === totalPages ? styles.disabledPageBtn : {})
+                  }}
+                  aria-label="Next Page"
+                >
+                  Next &rarr;
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -280,6 +346,35 @@ const styles = {
     fontSize: '0.9rem',
     fontWeight: '600',
     cursor: 'pointer',
+  },
+  paginationContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: '10px',
+    marginTop: '48px',
+    flexWrap: 'wrap',
+  },
+  pageBtn: {
+    padding: '10px 16px',
+    borderRadius: '8px',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(31, 41, 55, 0.4)',
+    color: '#9ca3af',
+    fontWeight: '600',
+    fontSize: '0.9rem',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  },
+  activePageBtn: {
+    backgroundColor: '#3b82f6',
+    color: '#ffffff',
+    borderColor: '#3b82f6',
+    boxShadow: '0 0 12px rgba(59, 130, 246, 0.4)',
+  },
+  disabledPageBtn: {
+    opacity: 0.4,
+    cursor: 'not-allowed',
   },
 };
 

@@ -30,18 +30,25 @@ const createItem = async (req, res) => {
   }
 };
 
-// @desc    Get all lost items (with optional search / filter query params)
-// @route   GET /api/lost-items?search=&category=&location=
-// @access  Public
 const getLostItems = async (req, res) => {
   try {
-    // 1. Extract optional query parameters from the request URL
+    // 1. Extract and sanitize query parameters for pagination
+    let page = parseInt(req.query.page, 10);
+    let limit = parseInt(req.query.limit, 10);
+
+    if (isNaN(page) || page <= 0) page = 1;
+    if (isNaN(limit) || limit <= 0) limit = 10;
+    if (limit > 100) limit = 100; // API protection boundary to prevent oversized payloads
+
+    const skip = (page - 1) * limit;
+
+    // 2. Extract optional search/filter query parameters
     const { search, category, location } = req.query;
 
-    // 2. Build a dynamic filter object — only add conditions for fields that were provided
+    // 3. Build a dynamic filter object
     const filter = {};
 
-    // Text search: case-insensitive partial match on title
+    // Text search: case-insensitive partial match on title or description
     if (search && search.trim()) {
       filter.$or = [
         { title:       { $regex: search.trim(), $options: 'i' } },
@@ -49,7 +56,7 @@ const getLostItems = async (req, res) => {
       ];
     }
 
-    // Exact match on category (e.g. 'Lost' or 'Found')
+    // Exact match on category
     if (category && category.trim() && category !== 'All') {
       filter.category = category.trim();
     }
@@ -59,13 +66,26 @@ const getLostItems = async (req, res) => {
       filter.location = { $regex: location.trim(), $options: 'i' };
     }
 
-    // 3. Pass the filter into find() — an empty filter {} returns all documents
-    const items = await Item.find(filter)
-      .populate('user', 'name email')
-      .sort({ createdAt: -1 });
+    // 4. Get total count of matching items concurrently with paginated find
+    const totalItems = await Item.countDocuments(filter);
 
-    // 4. Return filtered results
-    res.status(200).json(items);
+    // 5. Query MongoDB with projection, skip, and limit
+    const items = await Item.find(filter)
+      .select('title description category location date imageUrl status user createdAt')
+      .populate('user', 'name email')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    // 6. Return metadata-driven JSON response
+    res.status(200).json({
+      items,
+      page,
+      totalPages,
+      totalItems,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

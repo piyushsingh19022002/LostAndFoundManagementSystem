@@ -50,4 +50,11 @@ const foundItemSchema = new mongoose.Schema(
   }
 );
 
+// Indexes for query performance optimization
+foundItemSchema.index({ title: 1 });
+foundItemSchema.index({ location: 1 });
+foundItemSchema.index({ status: 1 });
+foundItemSchema.index({ createdAt: -1 });
+foundItemSchema.index({ user: 1 });
+
 module.exports = mongoose.model('FoundItem', foundItemSchema);

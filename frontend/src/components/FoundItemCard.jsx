@@ -35,7 +35,7 @@ const FoundItemCard = ({ item }) => {
       {/* Image Section */}
       <div style={styles.imageSection}>
         {item.imageUrl ? (
-          <img src={item.imageUrl} alt={item.title} style={styles.image} />
+          <img src={item.imageUrl} alt={item.title} style={styles.image} loading="lazy" />
         ) : (
           <div style={styles.imagePlaceholder}>
             <span style={styles.placeholderIcon}>🎁</span>

@@ -30,15 +30,22 @@ const createFoundItem = async (req, res) => {
   }
 };
 
-// @desc    Get all found items (with optional search / filter query params)
-// @route   GET /api/found-items?search=&status=&location=
-// @access  Public
 const getFoundItems = async (req, res) => {
   try {
-    // 1. Extract optional query parameters
+    // 1. Extract and sanitize pagination query parameters
+    let page = parseInt(req.query.page, 10);
+    let limit = parseInt(req.query.limit, 10);
+
+    if (isNaN(page) || page <= 0) page = 1;
+    if (isNaN(limit) || limit <= 0) limit = 10;
+    if (limit > 100) limit = 100; // API protection boundary
+
+    const skip = (page - 1) * limit;
+
+    // 2. Extract optional query parameters
     const { search, status, location } = req.query;
 
-    // 2. Build the dynamic filter object
+    // 3. Build the dynamic filter object
     const filter = {};
 
     // Partial text search across title and description
@@ -59,13 +66,26 @@ const getFoundItems = async (req, res) => {
       filter.location = { $regex: location.trim(), $options: 'i' };
     }
 
-    // 3. Query with the filter — empty filter {} returns all documents
-    const items = await FoundItem.find(filter)
-      .populate('user', 'name email')
-      .sort({ createdAt: -1 });
+    // 4. Query total count for metadata
+    const totalItems = await FoundItem.countDocuments(filter);
 
-    // 4. Return results
-    res.status(200).json(items);
+    // 5. Query with the filter, select projection, sort, skip and limit
+    const items = await FoundItem.find(filter)
+      .select('title description category location dateFound imageUrl status user createdAt')
+      .populate('user', 'name email')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    // 6. Return metadata-wrapped response
+    res.status(200).json({
+      items,
+      page,
+      totalPages,
+      totalItems,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -43,4 +43,11 @@ const itemSchema = new mongoose.Schema(
   }
 );
 
+// Indexes for query performance optimization
+itemSchema.index({ title: 1 });
+itemSchema.index({ category: 1 });
+itemSchema.index({ location: 1 });
+itemSchema.index({ createdAt: -1 });
+itemSchema.index({ user: 1 });
+
 module.exports = mongoose.model('Item', itemSchema);

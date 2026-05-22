@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../services/api';
-import Loader from '../components/Loader';
 import FoundItemCard from '../components/FoundItemCard';
+import ItemCardSkeleton from '../components/ItemCardSkeleton';
 import SearchBar from '../components/SearchBar';
 import CategoryFilter from '../components/CategoryFilter';
 import { FOUND_ITEM_STATUSES, FOUND_STATUS_OPTIONS } from '../constants/categories';
@@ -17,21 +17,32 @@ const FoundItems = () => {
   const [status, setStatus]     = useState('all');
   const [location, setLocation] = useState('');
 
+  // Pagination states
+  const [page, setPage]             = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const LIMIT = 9; // Grid-friendly size (3 columns x 3 rows)
+
   const debounceRef = useRef(null);
 
-  // Fetch found items with optional server-side filters
-  const fetchFoundItems = useCallback(async (searchVal, statusVal, locationVal) => {
+  // Fetch found items with optional server-side filters and pagination parameters
+  const fetchFoundItems = useCallback(async (searchVal, statusVal, locationVal, pageVal) => {
     try {
       setLoading(true);
       setError('');
 
-      const params = {};
+      const params = {
+        page: pageVal,
+        limit: LIMIT
+      };
       if (searchVal.trim())                 params.search   = searchVal.trim();
       if (statusVal && statusVal !== 'all') params.status   = statusVal;
       if (locationVal.trim())               params.location = locationVal.trim();
 
       const response = await API.get('/found-items', { params });
-      setItems(response.data);
+      setItems(response.data.items || []);
+      setTotalPages(response.data.totalPages || 1);
+      setTotalItems(response.data.totalItems || 0);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load found items feed. Please try again.');
     } finally {
@@ -39,14 +50,14 @@ const FoundItems = () => {
     }
   }, []);
 
-  // 400 ms debounce — batches rapid filter changes into a single API call
+  // 300 ms debounce — batches rapid filter changes into a single API call
   useEffect(() => {
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      fetchFoundItems(search, status, location);
-    }, 400);
+      fetchFoundItems(search, status, location, page);
+    }, 300);
     return () => clearTimeout(debounceRef.current);
-  }, [search, status, location, fetchFoundItems]);
+  }, [search, status, location, page, fetchFoundItems]);
 
   const hasActiveFilters = search.trim() !== '' || status !== 'all' || location.trim() !== '';
 
@@ -54,6 +65,12 @@ const FoundItems = () => {
     setSearch('');
     setStatus('all');
     setLocation('');
+    setPage(1);
+  };
+
+  const handleFilterChange = (setter) => (val) => {
+    setter(val);
+    setPage(1); // Reset to page 1 on filter updates
   };
 
   return (
@@ -74,11 +91,11 @@ const FoundItems = () => {
       {/* Reusable SearchBar */}
       <SearchBar
         search={search}
-        onSearch={setSearch}
+        onSearch={handleFilterChange(setSearch)}
         location={location}
-        onLocation={setLocation}
+        onLocation={handleFilterChange(setLocation)}
         filterValue={status}
-        onFilter={setStatus}
+        onFilter={handleFilterChange(setStatus)}
         filterOptions={FOUND_STATUS_OPTIONS}
         filterLabel="Status filter"
         placeholder="Search by title or description..."
@@ -91,7 +108,7 @@ const FoundItems = () => {
       <CategoryFilter
         categories={FOUND_ITEM_STATUSES}
         selected={status}
-        onSelect={setStatus}
+        onSelect={handleFilterChange(setStatus)}
         accentColor="rgba(16, 185, 129, 0.15)"
         accentBorder="rgba(16, 185, 129, 0.5)"
         accentTextColor="#34d399"
@@ -101,16 +118,17 @@ const FoundItems = () => {
       {/* Results Count */}
       {!loading && !error && (
         <p style={styles.resultsCount}>
-          {items.length} report{items.length !== 1 ? 's' : ''} found
+          {totalItems} report{totalItems !== 1 ? 's' : ''} found
           {hasActiveFilters && ' (filtered)'}
         </p>
       )}
 
-      {/* Loading State */}
+      {/* Loading State - Grid of Card Skeletons */}
       {loading && (
-        <div style={styles.loaderContainer}>
-          <Loader size="48px" color="#10b981" />
-          <p style={styles.loaderText}>Searching database...</p>
+        <div style={styles.grid}>
+          {Array.from({ length: 6 }).map((_, idx) => (
+            <ItemCardSkeleton key={idx} />
+          ))}
         </div>
       )}
 
@@ -147,11 +165,61 @@ const FoundItems = () => {
 
       {/* Items Grid */}
       {!loading && !error && items.length > 0 && (
-        <div style={styles.grid}>
-          {items.map((item) => (
-            <FoundItemCard key={item._id} item={item} />
-          ))}
-        </div>
+        <>
+          <div style={styles.grid}>
+            {items.map((item) => (
+              <FoundItemCard key={item._id} item={item} />
+            ))}
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div style={styles.paginationContainer}>
+              <button
+                onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                disabled={page === 1}
+                style={{
+                  ...styles.pageBtn,
+                  ...(page === 1 ? styles.disabledPageBtn : {})
+                }}
+                aria-label="Previous Page"
+              >
+                &larr; Previous
+              </button>
+
+              {Array.from({ length: totalPages }).map((_, idx) => {
+                const pageNum = idx + 1;
+                const isActive = page === pageNum;
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setPage(pageNum)}
+                    style={{
+                      ...styles.pageBtn,
+                      ...(isActive ? styles.activePageBtn : {})
+                    }}
+                    aria-label={`Page ${pageNum}`}
+                    aria-current={isActive ? 'page' : undefined}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+
+              <button
+                onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={page === totalPages}
+                style={{
+                  ...styles.pageBtn,
+                  ...(page === totalPages ? styles.disabledPageBtn : {})
+                }}
+                aria-label="Next Page"
+              >
+                Next &rarr;
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -241,6 +309,35 @@ const styles = {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
     gap: '24px',
+  },
+  paginationContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: '10px',
+    marginTop: '48px',
+    flexWrap: 'wrap',
+  },
+  pageBtn: {
+    padding: '10px 16px',
+    borderRadius: '8px',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(31, 41, 55, 0.4)',
+    color: '#9ca3af',
+    fontWeight: '600',
+    fontSize: '0.9rem',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  },
+  activePageBtn: {
+    backgroundColor: '#10b981',
+    color: '#ffffff',
+    borderColor: '#10b981',
+    boxShadow: '0 0 12px rgba(16, 185, 129, 0.4)',
+  },
+  disabledPageBtn: {
+    opacity: 0.4,
+    cursor: 'not-allowed',
   },
 };
 
