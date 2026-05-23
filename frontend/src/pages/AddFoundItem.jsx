@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import API from '../services/api';
+import { showSuccess, showError, showWarning, showPromise } from '../utils/toast';
+import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
+import Input from '../components/ui/Input';
+import { FiGift, FiCamera, FiTrash2, FiArrowLeft } from 'react-icons/fi';
 
 const AddFoundItem = () => {
   const navigate = useNavigate();
 
-  // Controlled form state — each field maps directly to the FoundItem schema
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -14,20 +18,17 @@ const AddFoundItem = () => {
     imageUrl: '',
   });
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState('');
-  const [success, setSuccess] = useState('');
-
-  // State for file upload & preview
+  const [isLoading, setIsLoading] = useState(false);
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
-  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const { title, description, location, dateFound, imageUrl } = formData;
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        setError('Image file is too large. Max size is 5MB.');
+        showWarning('Image file is too large. Max size is 5MB.');
         return;
       }
       setImageFile(file);
@@ -44,35 +45,35 @@ const AddFoundItem = () => {
     }
   };
 
-  // Generic handler — works for all inputs because it reads event.target.name
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const validateForm = () => {
+    if (!title.trim()) return 'Title is required.';
+    if (title.trim().length < 5) return 'Title must be at least 5 characters.';
+    if (!description.trim()) return 'Description is required.';
+    if (description.trim().length < 10) return 'Description must be at least 10 characters.';
+    if (!location.trim()) return 'Location is required.';
+    if (!dateFound) return 'Date found is required.';
+    return null;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
 
-    // Client-side validation
-    const { title, description, location, dateFound } = formData;
-    if (!title.trim() || !description.trim() || !location.trim() || !dateFound) {
-      return setError('Please fill in all required fields.');
-    }
-    if (title.trim().length < 5) {
-      return setError('Title must be at least 5 characters.');
-    }
-    if (description.trim().length < 10) {
-      return setError('Description must be at least 10 characters.');
+    const validationError = validateForm();
+    if (validationError) {
+      showWarning(validationError);
+      return;
     }
 
-    setLoading(true);
+    setIsLoading(true);
 
-    try {
+    const submitAction = async () => {
       let uploadedImageUrl = '';
       if (imageFile) {
-        setUploadingImage(true);
         const data = new FormData();
         data.append('image', imageFile);
         
@@ -83,405 +84,168 @@ const AddFoundItem = () => {
         });
         
         uploadedImageUrl = uploadResponse.data.imageUrl;
-        setUploadingImage(false);
       }
 
       const finalItemData = {
         ...formData,
-        imageUrl: uploadedImageUrl || formData.imageUrl,
+        imageUrl: uploadedImageUrl || imageUrl,
       };
 
-      // Axios interceptor automatically attaches the JWT from localStorage
-      await API.post('/found-items', finalItemData);
-      setSuccess('✅ Found item reported successfully! Redirecting to the feed...');
-      
-      // Clean up file objects
-      setImageFile(null);
-      if (imagePreview) {
-        URL.revokeObjectURL(imagePreview);
-        setImagePreview('');
+      const response = await API.post('/found-items', finalItemData);
+      return response.data;
+    };
+
+    showPromise(submitAction(), {
+      loading: 'Uploading image and submitting found item report...',
+      success: (data) => {
+        // Clean up preview URL
+        if (imagePreview) {
+          URL.revokeObjectURL(imagePreview);
+        }
+        setTimeout(() => {
+          navigate('/found-items');
+        }, 1500);
+        return 'Found item reported successfully!';
+      },
+      error: (err) => {
+        setIsLoading(false);
+        return err.response?.data?.message || 'Failed to submit the report.';
       }
-      
-      setTimeout(() => navigate('/found-items'), 2000);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to submit the report. Please try again.');
-      setUploadingImage(false);
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        {/* Header */}
-        <div style={styles.header}>
-          <span style={styles.headerIcon}>🎁</span>
-          <div>
-            <h1 style={styles.title}>Report a Found Item</h1>
-            <p style={styles.subtitle}>Help reunite someone with their belongings</p>
+    <div className="flex items-center justify-center min-h-[85vh] px-4 py-8">
+      {/* Background blobs */}
+      <div className="absolute top-1/4 left-10 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl -z-10 animate-pulse"></div>
+      <div className="absolute bottom-1/4 right-10 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl -z-10 animate-pulse delay-700"></div>
+
+      <Card className="w-full max-w-2xl border border-slate-800 shadow-2xl p-6 md:p-10 bg-slate-900/60 backdrop-blur-xl">
+        <div className="text-center mb-8">
+          <div className="inline-flex w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-indigo-600 items-center justify-center text-white font-bold text-xl mb-4 shadow shadow-emerald-500/20">
+            <FiGift className="w-6 h-6" />
           </div>
+          <h2 className="text-3xl font-extrabold tracking-tight text-white mb-2">Report a Found Item</h2>
+          <p className="text-sm text-slate-400">Help reunite someone with their belongings by providing accurate details.</p>
         </div>
 
-        {/* Alerts */}
-        {error && (
-          <div style={styles.errorAlert}>
-            <span>⚠️</span>
-            <span>{error}</span>
-          </div>
-        )}
-        {success && (
-          <div style={styles.successAlert}>
-            <span>{success}</span>
-          </div>
-        )}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <Input
+            label="Item Title"
+            type="text"
+            name="title"
+            value={title}
+            onChange={handleChange}
+            placeholder="e.g. Blue Nike Sneakers"
+            required
+            disabled={isLoading}
+          />
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <div style={styles.formGroup}>
-            <label style={styles.label} htmlFor="title">Item Title <span style={styles.required}>*</span></label>
-            <input
-              id="title"
-              name="title"
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Input
+              label="Location Found"
               type="text"
-              value={formData.title}
+              name="location"
+              value={location}
               onChange={handleChange}
-              placeholder="e.g. Blue Nike Sneakers"
-              style={styles.input}
-              disabled={loading}
+              placeholder="e.g. Park study table"
+              required
+              disabled={isLoading}
+            />
+
+            <Input
+              label="Date Found"
+              type="date"
+              name="dateFound"
+              value={dateFound}
+              onChange={handleChange}
+              required
+              disabled={isLoading}
             />
           </div>
 
-          <div style={styles.formGroup}>
-            <label style={styles.label} htmlFor="description">Description <span style={styles.required}>*</span></label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              placeholder="Describe the item in detail — size, colour, brand, markings..."
-              style={styles.textarea}
-              rows={5}
-              disabled={loading}
-            />
-          </div>
-
-          <div style={styles.row}>
-            <div style={{ ...styles.formGroup, flex: 1 }}>
-              <label style={styles.label} htmlFor="location">Where Found <span style={styles.required}>*</span></label>
-              <input
-                id="location"
-                name="location"
-                type="text"
-                value={formData.location}
-                onChange={handleChange}
-                placeholder="e.g. Central Park, Bench near fountain"
-                style={styles.input}
-                disabled={loading}
-              />
-            </div>
-
-            <div style={{ ...styles.formGroup, flex: 1 }}>
-              <label style={styles.label} htmlFor="dateFound">Date Found <span style={styles.required}>*</span></label>
-              <input
-                id="dateFound"
-                name="dateFound"
-                type="date"
-                value={formData.dateFound}
-                onChange={handleChange}
-                style={styles.input}
-                disabled={loading}
-              />
-            </div>
-          </div>
-
-          {/* Form Group: Image File Upload */}
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Item Image (Upload File)</label>
-            <div style={styles.uploadContainer}>
+          {/* File Upload Container */}
+          <div>
+            <label className="block text-sm font-semibold text-slate-300 mb-2">Item Image</label>
+            <div className="flex flex-col gap-3">
               <input
                 id="imageUpload"
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
-                style={styles.fileInput}
-                disabled={loading || uploadingImage}
+                className="hidden"
+                disabled={isLoading}
               />
-              <label htmlFor="imageUpload" style={styles.uploadBox}>
-                <span style={styles.uploadIcon}>📷</span>
-                <span style={styles.uploadText}>
-                  {imageFile ? 'Change Selected File' : 'Choose Image / Photo'}
-                </span>
+              <label 
+                htmlFor="imageUpload" 
+                className="flex items-center justify-center gap-2.5 p-4 border-2 border-dashed border-slate-800 hover:border-slate-700 bg-slate-950/40 hover:bg-slate-950/60 rounded-xl cursor-pointer text-slate-300 hover:text-slate-100 font-semibold text-sm transition-all text-center"
+              >
+                <FiCamera className="w-5 h-5 text-emerald-400" />
+                <span>{imageFile ? 'Change Selected Image' : 'Choose Image File'}</span>
               </label>
+
               {imageFile && (
-                <div style={styles.fileName}>{imageFile.name}</div>
+                <div className="text-xs text-slate-400 font-medium px-1 truncate">
+                  Selected: {imageFile.name}
+                </div>
               )}
             </div>
-            
+
             {imagePreview && (
-              <div style={styles.previewWrapper}>
-                <img src={imagePreview} alt="Preview" style={styles.imagePreview} />
-                <button
-                  type="button"
+              <div className="mt-4 p-4 border border-slate-850 bg-slate-950/60 rounded-2xl flex flex-col items-center gap-3">
+                <img src={imagePreview} alt="Upload preview" className="max-h-56 rounded-xl object-contain border border-slate-850" />
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm" 
                   onClick={handleRemoveImage}
-                  style={styles.removeImageBtn}
-                  disabled={loading || uploadingImage}
+                  className="text-rose-400 hover:text-rose-300 border-rose-500/20 hover:bg-rose-500/10"
                 >
-                  ✕ Remove Image
-                </button>
+                  <FiTrash2 className="w-4 h-4" />
+                  Remove Image
+                </Button>
               </div>
             )}
           </div>
 
-          <button type="submit" style={styles.submitBtn} disabled={loading}>
-            {loading ? (
-              <span style={styles.loadingText}>
-                <span style={styles.spinner} /> Submitting Report...
-              </span>
-            ) : (
-              '🎁 Submit Found Item Report'
-            )}
-          </button>
-        </form>
+          <div>
+            <label className="block text-sm font-semibold text-slate-300 mb-2" htmlFor="description">
+              Detailed Description
+            </label>
+            <textarea
+              id="description"
+              name="description"
+              value={description}
+              onChange={handleChange}
+              placeholder="Describe the item in detail — size, colour, brand, markings..."
+              className="w-full px-4 py-3 bg-slate-950/80 border border-slate-850 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl text-slate-200 text-sm outline-none transition-all resize-vertical"
+              rows={5}
+              required
+              disabled={isLoading}
+            />
+          </div>
 
-        <div style={styles.footer}>
-          <Link to="/found-items" style={styles.footerLink}>← View All Found Items</Link>
-        </div>
-      </div>
+          <div className="flex flex-col gap-4 pt-2">
+            <Button 
+              type="submit" 
+              variant="primary" 
+              className="w-full justify-center py-3 bg-emerald-600 hover:bg-emerald-500 shadow-emerald-500/10" 
+              disabled={isLoading}
+            >
+              Submit Found Item Report
+            </Button>
+            <RouterLink 
+              to="/found-items" 
+              className="flex items-center justify-center gap-2 text-sm font-semibold text-emerald-400 hover:text-emerald-300 transition-colors"
+            >
+              <FiArrowLeft className="w-4 h-4" />
+              Back to Found Items Feed
+            </RouterLink>
+          </div>
+        </form>
+      </Card>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    minHeight: '85vh',
-    background: 'radial-gradient(circle at 30% 50%, #064e3b 0%, #111827 60%)',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: '40px 20px',
-    fontFamily: "'Outfit', 'Inter', sans-serif",
-  },
-  card: {
-    width: '100%',
-    maxWidth: '680px',
-    backgroundColor: 'rgba(31, 41, 55, 0.6)',
-    backdropFilter: 'blur(20px)',
-    WebkitBackdropFilter: 'blur(20px)',
-    border: '1px solid rgba(16, 185, 129, 0.15)',
-    borderRadius: '20px',
-    padding: '40px',
-    boxShadow: '0 25px 50px rgba(0,0,0,0.4)',
-  },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '16px',
-    marginBottom: '32px',
-  },
-  headerIcon: {
-    fontSize: '3rem',
-    lineHeight: 1,
-  },
-  title: {
-    fontSize: '1.75rem',
-    fontWeight: '800',
-    color: '#ffffff',
-    margin: 0,
-    letterSpacing: '-0.02em',
-  },
-  subtitle: {
-    color: '#9ca3af',
-    margin: '4px 0 0',
-    fontSize: '0.95rem',
-  },
-  errorAlert: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    padding: '14px 18px',
-    borderRadius: '10px',
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    border: '1px solid rgba(239, 68, 68, 0.25)',
-    color: '#fca5a5',
-    fontSize: '0.9rem',
-    marginBottom: '24px',
-  },
-  successAlert: {
-    padding: '14px 18px',
-    borderRadius: '10px',
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    border: '1px solid rgba(16, 185, 129, 0.25)',
-    color: '#6ee7b7',
-    fontSize: '0.9rem',
-    marginBottom: '24px',
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-  },
-  row: {
-    display: 'flex',
-    gap: '16px',
-    flexWrap: 'wrap',
-  },
-  formGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-  },
-  label: {
-    fontSize: '0.85rem',
-    fontWeight: '700',
-    color: '#e5e7eb',
-    textTransform: 'uppercase',
-    letterSpacing: '0.04em',
-  },
-  required: {
-    color: '#f87171',
-    marginLeft: '2px',
-  },
-  optional: {
-    color: '#6b7280',
-    fontWeight: '400',
-    textTransform: 'none',
-    letterSpacing: 0,
-    marginLeft: '4px',
-    fontSize: '0.8rem',
-  },
-  input: {
-    padding: '12px 16px',
-    borderRadius: '10px',
-    border: '1px solid rgba(255,255,255,0.1)',
-    backgroundColor: 'rgba(17, 24, 39, 0.6)',
-    color: '#ffffff',
-    fontSize: '0.95rem',
-    fontFamily: 'inherit',
-    outline: 'none',
-    transition: 'border-color 0.2s',
-    width: '100%',
-    boxSizing: 'border-box',
-  },
-  textarea: {
-    padding: '12px 16px',
-    borderRadius: '10px',
-    border: '1px solid rgba(255,255,255,0.1)',
-    backgroundColor: 'rgba(17, 24, 39, 0.6)',
-    color: '#ffffff',
-    fontSize: '0.95rem',
-    fontFamily: 'inherit',
-    outline: 'none',
-    resize: 'vertical',
-    width: '100%',
-    boxSizing: 'border-box',
-    lineHeight: '1.6',
-  },
-  submitBtn: {
-    padding: '15px',
-    borderRadius: '12px',
-    border: 'none',
-    background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
-    color: '#ffffff',
-    fontSize: '1rem',
-    fontWeight: '800',
-    cursor: 'pointer',
-    marginTop: '8px',
-    transition: 'opacity 0.2s',
-    fontFamily: 'inherit',
-    letterSpacing: '0.02em',
-  },
-  loadingText: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '10px',
-  },
-  spinner: {
-    display: 'inline-block',
-    width: '16px',
-    height: '16px',
-    border: '2px solid rgba(255,255,255,0.3)',
-    borderTopColor: '#ffffff',
-    borderRadius: '50%',
-    animation: 'spin 0.8s linear infinite',
-  },
-  footer: {
-    marginTop: '24px',
-    textAlign: 'center',
-  },
-  footerLink: {
-    color: '#34d399',
-    textDecoration: 'none',
-    fontSize: '0.9rem',
-    fontWeight: '600',
-  },
-  uploadContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '10px',
-  },
-  fileInput: {
-    display: 'none',
-  },
-  uploadBox: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '10px',
-    padding: '14px',
-    border: '2px dashed rgba(16, 185, 129, 0.2)',
-    borderRadius: '10px',
-    cursor: 'pointer',
-    backgroundColor: 'rgba(17, 24, 39, 0.4)',
-    color: '#e5e7eb',
-    fontSize: '0.95rem',
-    fontWeight: '600',
-    transition: 'all 0.2s ease',
-    textAlign: 'center',
-  },
-  uploadIcon: {
-    fontSize: '1.2rem',
-  },
-  uploadText: {
-    letterSpacing: '0.02em',
-  },
-  fileName: {
-    fontSize: '0.85rem',
-    color: '#9ca3af',
-    wordBreak: 'break-all',
-    paddingLeft: '4px',
-  },
-  previewWrapper: {
-    position: 'relative',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '12px',
-    marginTop: '12px',
-    padding: '12px',
-    border: '1px solid rgba(16, 185, 129, 0.15)',
-    borderRadius: '12px',
-    backgroundColor: 'rgba(17, 24, 39, 0.6)',
-  },
-  imagePreview: {
-    width: '100%',
-    maxHeight: '220px',
-    objectFit: 'contain',
-    borderRadius: '8px',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-  },
-  removeImageBtn: {
-    padding: '6px 12px',
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
-    border: '1px solid rgba(239, 68, 68, 0.3)',
-    borderRadius: '6px',
-    color: '#fca5a5',
-    fontSize: '0.85rem',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.15s ease',
-  },
 };
 
 export default AddFoundItem;

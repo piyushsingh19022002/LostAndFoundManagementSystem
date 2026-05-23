@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import API from '../../services/api';
+import ItemCardSkeleton from '../../components/ItemCardSkeleton';
 
 const AdminItems = () => {
   const [items, setItems] = useState([]);
@@ -160,9 +161,10 @@ const AdminItems = () => {
       )}
 
       {loading ? (
-        <div style={styles.loadingContainer}>
-          <div style={styles.spinner}></div>
-          <p style={{ marginTop: '16px', color: '#9ca3af' }}>Fetching unified catalog...</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <ItemCardSkeleton key={i} />
+          ))}
         </div>
       ) : error ? (
         <div style={styles.errorBanner}>

@@ -124,15 +124,6 @@ const Chat = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div style={styles.loaderContainer}>
-        <Loader size="50px" color="#61dafb" />
-        <p style={styles.loaderText}>Loading conversation...</p>
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <div style={styles.container}>
@@ -158,25 +149,59 @@ const Chat = () => {
         {/* Chat Header */}
         <div style={styles.header}>
           <div style={styles.headerInfo}>
-            <span style={styles.partnerName}>{chatPartner?.name || 'Anonymous User'}</span>
-            <span style={styles.itemTitleLink}>Discussing: {itemTitle}</span>
+            {loading ? (
+              <div className="space-y-1.5 animate-pulse">
+                <div className="w-32 h-5 bg-slate-800 rounded" />
+                <div className="w-48 h-3.5 bg-slate-850 rounded" />
+              </div>
+            ) : (
+              <>
+                <span style={styles.partnerName}>{chatPartner?.name || 'Anonymous User'}</span>
+                <span style={styles.itemTitleLink}>Discussing: {itemTitle}</span>
+              </>
+            )}
           </div>
           <div style={styles.headerMeta}>
-            <span style={{
-              ...styles.statusBadge,
-              backgroundColor: claim?.status === 'approved' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
-              color: claim?.status === 'approved' ? '#34d399' : '#fbbf24',
-              border: claim?.status === 'approved' ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(245, 158, 11, 0.3)'
-            }}>
-              {claim?.status === 'approved' ? 'Claim Approved ✅' : 'Claim Pending ⏳'}
-            </span>
+            {!loading && (
+              <span style={{
+                ...styles.statusBadge,
+                backgroundColor: claim?.status === 'approved' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                color: claim?.status === 'approved' ? '#34d399' : '#fbbf24',
+                border: claim?.status === 'approved' ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(245, 158, 11, 0.3)'
+              }}>
+                {claim?.status === 'approved' ? 'Claim Approved ✅' : 'Claim Pending ⏳'}
+              </span>
+            )}
             <button onClick={() => navigate(-1)} style={styles.closeBtn}>✕ Close</button>
           </div>
         </div>
 
         {/* Messages Container */}
         <div style={styles.messagesContainer}>
-          {messages.length === 0 ? (
+          {loading ? (
+            <div className="space-y-6 w-full">
+              {/* Left message skeleton */}
+              <div className="flex justify-start">
+                <div className="w-1/2 p-4 bg-slate-900/60 border border-slate-800/80 rounded-2xl rounded-bl-sm animate-pulse flex flex-col gap-2.5">
+                  <div className="w-16 h-3 bg-slate-800 rounded" />
+                  <div className="w-full h-3.5 bg-slate-800 rounded" />
+                </div>
+              </div>
+              {/* Right message skeleton */}
+              <div className="flex justify-end">
+                <div className="w-2/5 p-4 bg-indigo-950/10 border border-indigo-500/10 rounded-2xl rounded-br-sm animate-pulse flex justify-end">
+                  <div className="w-4/5 h-3.5 bg-indigo-500/10 rounded" />
+                </div>
+              </div>
+              {/* Left message skeleton */}
+              <div className="flex justify-start">
+                <div className="w-3/5 p-4 bg-slate-900/60 border border-slate-800/80 rounded-2xl rounded-bl-sm animate-pulse flex flex-col gap-2.5">
+                  <div className="w-20 h-3 bg-slate-800 rounded" />
+                  <div className="w-5/6 h-3.5 bg-slate-800 rounded" />
+                </div>
+              </div>
+            </div>
+          ) : messages.length === 0 ? (
             <div style={styles.emptyChat}>
               <span style={styles.emptyChatIcon}>💬</span>
               <p style={styles.emptyChatText}>No messages yet. Send a message to start the conversation!</p>

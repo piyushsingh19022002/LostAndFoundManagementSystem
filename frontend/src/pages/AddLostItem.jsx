@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import API from '../services/api';
-import Loader from '../components/Loader';
+import { showSuccess, showError, showWarning, showPromise } from '../utils/toast';
+import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
+import Input from '../components/ui/Input';
+import { FiPlusCircle, FiCamera, FiTrash2, FiCalendar, FiMapPin, FiArrowLeft } from 'react-icons/fi';
 
 const AddLostItem = () => {
-  // 1. Controlled Form State
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -14,23 +17,18 @@ const AddLostItem = () => {
     imageUrl: ''
   });
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
-
-  // State for file upload & preview
+  const [isLoading, setIsLoading] = useState(false);
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
-  const [uploadingImage, setUploadingImage] = useState(false);
-
   const navigate = useNavigate();
+
   const { title, description, category, location, date, imageUrl } = formData;
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        setError('Image file is too large. Max size is 5MB.');
+        showWarning('Image file is too large. Max size is 5MB.');
         return;
       }
       setImageFile(file);
@@ -47,7 +45,6 @@ const AddLostItem = () => {
     }
   };
 
-  // 2. Controlled Inputs Handler
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -56,7 +53,6 @@ const AddLostItem = () => {
     }));
   };
 
-  // 3. Form Validation
   const validateForm = () => {
     if (!title.trim()) return 'Title is required.';
     if (title.length < 3) return 'Title must be at least 3 characters long.';
@@ -64,30 +60,23 @@ const AddLostItem = () => {
     if (description.length < 10) return 'Description must be at least 10 characters long.';
     if (!location.trim()) return 'Location is required.';
     if (!date) return 'Date is required.';
-    
-    // Future validation for imageUrl format could be placed here if needed
     return null;
   };
 
-  // 4. Form Submission Handler
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess(false);
 
-    // Run Frontend Validation
     const validationError = validateForm();
     if (validationError) {
-      setError(validationError);
+      showWarning(validationError);
       return;
     }
 
-    setLoading(true);
+    setIsLoading(true);
 
-    try {
+    const submitAction = async () => {
       let uploadedImageUrl = '';
       if (imageFile) {
-        setUploadingImage(true);
         const data = new FormData();
         data.append('image', imageFile);
         
@@ -96,9 +85,7 @@ const AddLostItem = () => {
             'Content-Type': 'multipart/form-data',
           },
         });
-        
         uploadedImageUrl = uploadResponse.data.imageUrl;
-        setUploadingImage(false);
       }
 
       const finalItemData = {
@@ -106,440 +93,181 @@ const AddLostItem = () => {
         imageUrl: uploadedImageUrl || imageUrl,
       };
 
-      // Axios request - authorization token is automatically attached by API interceptor in services/api.js
       const response = await API.post('/lost-items', finalItemData);
-      
-      if (response.status === 201 || response.status === 200) {
-        setSuccess(true);
-        setFormData({
-          title: '',
-          description: '',
-          category: 'Lost',
-          location: '',
-          date: '',
-          imageUrl: ''
-        });
-        setImageFile(null);
+      return response.data;
+    };
+
+    showPromise(submitAction(), {
+      loading: 'Uploading images and submitting lost item report...',
+      success: (data) => {
+        // Clean up preview URL
         if (imagePreview) {
           URL.revokeObjectURL(imagePreview);
-          setImagePreview('');
         }
-        
-        // Short timeout for visual feedback before redirecting
         setTimeout(() => {
-          navigate('/items');
+          navigate('/lost-items');
         }, 1500);
+        return 'Lost item reported successfully!';
+      },
+      error: (err) => {
+        setIsLoading(false);
+        return err.response?.data?.message || 'Failed to submit the report.';
       }
-    } catch (err) {
-      console.error('Error submitting form:', err);
-      setError(err.response?.data?.message || 'Something went wrong. Please try again.');
-      setUploadingImage(false);
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <div style={styles.header}>
-          <h2 style={styles.titleText}>Report Lost or Found Item</h2>
-          <p style={styles.subtitleText}>Provide accurate details to help recover or return the item.</p>
+    <div className="flex items-center justify-center min-h-[85vh] px-4 py-8">
+      {/* Visual background accents */}
+      <div className="absolute top-1/4 left-10 w-96 h-96 bg-rose-500/5 rounded-full blur-3xl -z-10 animate-pulse"></div>
+      <div className="absolute bottom-1/4 right-10 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl -z-10 animate-pulse delay-700"></div>
+
+      <Card className="w-full max-w-2xl border border-slate-800 shadow-2xl p-6 md:p-10 bg-slate-900/60 backdrop-blur-xl">
+        <div className="text-center mb-8">
+          <div className="inline-flex w-12 h-12 rounded-2xl bg-gradient-to-tr from-rose-500 to-indigo-600 items-center justify-center text-white font-bold text-xl mb-4 shadow shadow-indigo-500/20">
+            <FiPlusCircle className="w-6 h-6" />
+          </div>
+          <h2 className="text-3xl font-extrabold tracking-tight text-white mb-2">Report a Lost Item</h2>
+          <p className="text-sm text-slate-400">Provide accurate details to help recover or return the item.</p>
         </div>
 
-        {error && (
-          <div style={styles.errorAlert}>
-            <span style={styles.alertIcon}>⚠️</span>
-            <span style={styles.alertText}>{error}</span>
-          </div>
-        )}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <Input
+            label="Item Title"
+            type="text"
+            name="title"
+            value={title}
+            onChange={handleChange}
+            placeholder="e.g. Blue iPhone 13 Pro Max"
+            required
+            disabled={isLoading}
+          />
 
-        {success && (
-          <div style={styles.successAlert}>
-            <span style={styles.alertIcon}>🎉</span>
-            <span style={styles.alertText}>Item reported successfully! Redirecting...</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} style={styles.form}>
-          {/* Form Group: Title */}
-          <div style={styles.formGroup}>
-            <label style={styles.label} htmlFor="title">Item Title *</label>
-            <input
-              id="title"
-              type="text"
-              name="title"
-              value={title}
-              onChange={handleChange}
-              placeholder="e.g. Blue iPhone 13 Pro Max"
-              style={styles.input}
-              required
-              disabled={loading}
-            />
-          </div>
-
-          {/* Form Row: Category & Date */}
-          <div style={styles.formRow}>
-            <div style={{ ...styles.formGroup, flex: 1 }}>
-              <label style={styles.label} htmlFor="category">Category *</label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-semibold text-slate-300 mb-2">Category</label>
               <select
-                id="category"
                 name="category"
                 value={category}
                 onChange={handleChange}
-                style={styles.select}
-                disabled={loading}
+                className="w-full px-4 py-3 bg-slate-950/80 border border-slate-850 hover:border-slate-800 focus:border-indigo-500 rounded-xl text-slate-200 text-sm outline-none transition-colors cursor-pointer appearance-none"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 16px center',
+                  backgroundSize: '16px',
+                }}
+                disabled={isLoading}
               >
                 <option value="Lost">Lost</option>
                 <option value="Found">Found</option>
               </select>
             </div>
 
-            <div style={{ ...styles.formGroup, flex: 1 }}>
-              <label style={styles.label} htmlFor="date">Date *</label>
-              <input
-                id="date"
-                type="date"
-                name="date"
-                value={date}
-                onChange={handleChange}
-                style={styles.input}
-                required
-                disabled={loading}
-              />
-            </div>
-          </div>
-
-          {/* Form Group: Location */}
-          <div style={styles.formGroup}>
-            <label style={styles.label} htmlFor="location">Location *</label>
-            <input
-              id="location"
-              type="text"
-              name="location"
-              value={location}
+            <Input
+              label="Date Lost"
+              type="date"
+              name="date"
+              value={date}
               onChange={handleChange}
-              placeholder="e.g. Central Library, 2nd Floor Study Desk"
-              style={styles.input}
               required
-              disabled={loading}
+              disabled={isLoading}
             />
           </div>
 
-          {/* Form Group: Image File Upload */}
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Item Image (Upload File)</label>
-            <div style={styles.uploadContainer}>
+          <Input
+            label="Location"
+            type="text"
+            name="location"
+            value={location}
+            onChange={handleChange}
+            placeholder="e.g. Central Library, 2nd Floor Study Desk"
+            required
+            disabled={isLoading}
+          />
+
+          {/* File Upload Selector */}
+          <div>
+            <label className="block text-sm font-semibold text-slate-300 mb-2">Item Image</label>
+            <div className="flex flex-col gap-3">
               <input
                 id="imageUpload"
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
-                style={styles.fileInput}
-                disabled={loading || uploadingImage}
+                className="hidden"
+                disabled={isLoading}
               />
-              <label htmlFor="imageUpload" style={styles.uploadBox}>
-                <span style={styles.uploadIcon}>📷</span>
-                <span style={styles.uploadText}>
-                  {imageFile ? 'Change Selected File' : 'Choose Image / Photo'}
-                </span>
+              <label 
+                htmlFor="imageUpload" 
+                className="flex items-center justify-center gap-2.5 p-4 border-2 border-dashed border-slate-800 hover:border-slate-700 bg-slate-950/40 hover:bg-slate-950/60 rounded-xl cursor-pointer text-slate-300 hover:text-slate-100 font-semibold text-sm transition-all text-center"
+              >
+                <FiCamera className="w-5 h-5 text-rose-400" />
+                <span>{imageFile ? 'Change Selected Image' : 'Choose Image File'}</span>
               </label>
+
               {imageFile && (
-                <div style={styles.fileName}>{imageFile.name}</div>
+                <div className="text-xs text-slate-400 font-medium px-1 truncate">
+                  Selected: {imageFile.name}
+                </div>
               )}
             </div>
-            
+
             {imagePreview && (
-              <div style={styles.previewWrapper}>
-                <img src={imagePreview} alt="Preview" style={styles.imagePreview} />
-                <button
-                  type="button"
+              <div className="mt-4 p-4 border border-slate-850 bg-slate-950/60 rounded-2xl flex flex-col items-center gap-3">
+                <img src={imagePreview} alt="Upload preview" className="max-h-56 rounded-xl object-contain border border-slate-850" />
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm" 
                   onClick={handleRemoveImage}
-                  style={styles.removeImageBtn}
-                  disabled={loading || uploadingImage}
+                  className="text-rose-400 hover:text-rose-300 border-rose-500/20 hover:bg-rose-500/10"
                 >
-                  ✕ Remove Image
-                </button>
+                  <FiTrash2 className="w-4 h-4" />
+                  Remove Image
+                </Button>
               </div>
             )}
           </div>
 
-          {/* Form Group: Description */}
-          <div style={styles.formGroup}>
-            <label style={styles.label} htmlFor="description">Detailed Description *</label>
+          <div>
+            <label className="block text-sm font-semibold text-slate-300 mb-2" htmlFor="description">
+              Detailed Description
+            </label>
             <textarea
               id="description"
               name="description"
               value={description}
               onChange={handleChange}
-              placeholder="Include details like color, brand, serial number, cases, or distinct marks..."
-              style={styles.textarea}
+              placeholder="Include details like color, brand, distinct marks..."
+              className="w-full px-4 py-3 bg-slate-950/80 border border-slate-850 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl text-slate-200 text-sm outline-none transition-all resize-vertical"
               rows={4}
               required
-              disabled={loading}
+              disabled={isLoading}
             />
           </div>
 
-          {/* Submit Button & Links */}
-          <div style={styles.actionContainer}>
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                ...styles.submitBtn,
-                opacity: loading ? 0.7 : 1,
-                cursor: loading ? 'not-allowed' : 'pointer'
-              }}
+          <div className="flex flex-col gap-4 pt-2">
+            <Button 
+              type="submit" 
+              variant="primary" 
+              className="w-full justify-center py-3" 
+              disabled={isLoading}
             >
-              {loading ? (
-                <div style={styles.btnLoadingContent}>
-                  <Loader size="20px" color="#ffffff" />
-                  <span>Submitting...</span>
-                </div>
-              ) : (
-                'Submit Report'
-              )}
-            </button>
-
-            <div style={styles.linkContainer}>
-              <Link to="/items" style={styles.backLink}>
-                ← View All Items
-              </Link>
-            </div>
+              Submit Report
+            </Button>
+            <RouterLink 
+              to="/lost-items" 
+              className="flex items-center justify-center gap-2 text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition-colors"
+            >
+              <FiArrowLeft className="w-4 h-4" />
+              Back to Lost Items Feed
+            </RouterLink>
           </div>
         </form>
-      </div>
+      </Card>
     </div>
   );
-};
-
-// Premium Stylesheet using Vanilla CSS-in-JS Architecture
-const styles = {
-  container: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: '80vh',
-    padding: '20px',
-    background: 'radial-gradient(circle at center, #1f2937 0%, #111827 100%)',
-    fontFamily: "'Outfit', 'Inter', sans-serif",
-  },
-  card: {
-    width: '100%',
-    maxWidth: '600px',
-    backgroundColor: 'rgba(31, 41, 55, 0.65)',
-    backdropFilter: 'blur(16px)',
-    WebkitBackdropFilter: 'blur(16px)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    borderRadius: '16px',
-    padding: '40px',
-    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
-  },
-  header: {
-    marginBottom: '32px',
-    textAlign: 'center',
-  },
-  titleText: {
-    fontSize: '2rem',
-    fontWeight: '700',
-    color: '#ffffff',
-    margin: '0 0 10px 0',
-    letterSpacing: '-0.025em',
-    background: 'linear-gradient(to right, #61dafb, #a855f7)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-  },
-  subtitleText: {
-    fontSize: '0.95rem',
-    color: '#9ca3af',
-    margin: 0,
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '24px',
-  },
-  formRow: {
-    display: 'flex',
-    gap: '20px',
-    flexWrap: 'wrap',
-  },
-  formGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-  },
-  label: {
-    fontSize: '0.875rem',
-    fontWeight: '600',
-    color: '#e5e7eb',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-  },
-  input: {
-    padding: '12px 16px',
-    backgroundColor: 'rgba(17, 24, 39, 0.8)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '8px',
-    color: '#ffffff',
-    fontSize: '1rem',
-    transition: 'border-color 0.2s, box-shadow 0.2s',
-    outline: 'none',
-  },
-  select: {
-    padding: '12px 16px',
-    backgroundColor: 'rgba(17, 24, 39, 0.8)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '8px',
-    color: '#ffffff',
-    fontSize: '1rem',
-    outline: 'none',
-    cursor: 'pointer',
-    appearance: 'none',
-    backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'right 16px center',
-    backgroundSize: '16px',
-    paddingRight: '40px',
-  },
-  textarea: {
-    padding: '12px 16px',
-    backgroundColor: 'rgba(17, 24, 39, 0.8)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '8px',
-    color: '#ffffff',
-    fontSize: '1rem',
-    resize: 'vertical',
-    outline: 'none',
-    fontFamily: 'inherit',
-  },
-  actionContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-    marginTop: '12px',
-  },
-  submitBtn: {
-    padding: '14px',
-    borderRadius: '8px',
-    border: 'none',
-    background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-    color: '#ffffff',
-    fontSize: '1rem',
-    fontWeight: '700',
-    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
-    transition: 'transform 0.1s, box-shadow 0.2s',
-  },
-  btnLoadingContent: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: '10px',
-  },
-  linkContainer: {
-    textAlign: 'center',
-  },
-  backLink: {
-    color: '#61dafb',
-    textDecoration: 'none',
-    fontSize: '0.9rem',
-    fontWeight: '600',
-    transition: 'color 0.2s',
-  },
-  errorAlert: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
-    border: '1px solid rgba(239, 68, 68, 0.3)',
-    borderRadius: '8px',
-    padding: '12px 16px',
-    marginBottom: '24px',
-  },
-  successAlert: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
-    border: '1px solid rgba(16, 185, 129, 0.3)',
-    borderRadius: '8px',
-    padding: '12px 16px',
-    marginBottom: '24px',
-  },
-  alertIcon: {
-    fontSize: '1.2rem',
-  },
-  alertText: {
-    fontSize: '0.9rem',
-    color: '#f3f4f6',
-    fontWeight: '500',
-  },
-  uploadContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '10px',
-  },
-  fileInput: {
-    display: 'none',
-  },
-  uploadBox: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '10px',
-    padding: '14px',
-    border: '2px dashed rgba(255, 255, 255, 0.15)',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    backgroundColor: 'rgba(17, 24, 39, 0.4)',
-    color: '#e5e7eb',
-    fontSize: '0.95rem',
-    fontWeight: '600',
-    transition: 'all 0.2s ease',
-    textAlign: 'center',
-  },
-  uploadIcon: {
-    fontSize: '1.2rem',
-  },
-  uploadText: {
-    letterSpacing: '0.02em',
-  },
-  fileName: {
-    fontSize: '0.85rem',
-    color: '#9ca3af',
-    wordBreak: 'break-all',
-    paddingLeft: '4px',
-  },
-  previewWrapper: {
-    position: 'relative',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '12px',
-    marginTop: '12px',
-    padding: '12px',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    borderRadius: '12px',
-    backgroundColor: 'rgba(17, 24, 39, 0.6)',
-  },
-  imagePreview: {
-    width: '100%',
-    maxHeight: '220px',
-    objectFit: 'contain',
-    borderRadius: '8px',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-  },
-  removeImageBtn: {
-    padding: '6px 12px',
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
-    border: '1px solid rgba(239, 68, 68, 0.3)',
-    borderRadius: '6px',
-    color: '#fca5a5',
-    fontSize: '0.85rem',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.15s ease',
-  }
 };
 
 export default AddLostItem;

@@ -5,6 +5,7 @@ import { AuthContext } from '../context/AuthContext';
 import DashboardCard from '../components/DashboardCard';
 import RecentActivity from '../components/RecentActivity';
 import ProfileSection from '../components/ProfileSection';
+import AnalyticsSkeleton from '../components/ui/AnalyticsSkeleton';
 
 const Dashboard = () => {
   const { user } = useContext(AuthContext);
@@ -81,9 +82,18 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div style={styles.loadingContainer}>
-        <div style={styles.spinner}></div>
-        <p style={{ marginTop: '16px', color: '#9ca3af' }}>Assembling your personalized workspace...</p>
+      <div style={styles.dashboardWrapper}>
+        <div style={styles.container}>
+          <div style={styles.header}>
+            <div>
+              <h1 style={styles.welcomeText}>Workspace Dashboard</h1>
+              <p style={styles.subtext}>Assembling your personalized workspace...</p>
+            </div>
+          </div>
+          <div className="mt-8">
+            <AnalyticsSkeleton />
+          </div>
+        </div>
       </div>
     );
   }

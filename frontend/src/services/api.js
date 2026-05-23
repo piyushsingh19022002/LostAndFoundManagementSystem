@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { showWarning } from '../utils/toast';
 
 // Create an Axios instance with base configuration
 const API = axios.create({
@@ -17,5 +18,27 @@ API.interceptors.request.use((req) => {
   
   return req; // Return the modified request
 });
+
+// Add a response interceptor to intercept global responses and handle errors
+API.interceptors.response.use(
+  (res) => res,
+  (error) => {
+    // Check if error response is 401 (Unauthorized)
+    if (error.response && error.response.status === 401) {
+      const currentToken = localStorage.getItem('token');
+      if (currentToken) {
+        // Clear token
+        localStorage.removeItem('token');
+        // Trigger a non-duplicating warning toast
+        showWarning('Your session has expired. Please log in again.');
+        // Redirect to login if possible (or force a page reload to let auth state update)
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 1500);
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default API;

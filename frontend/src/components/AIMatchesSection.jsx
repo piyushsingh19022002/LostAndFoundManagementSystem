@@ -32,14 +32,20 @@ const AIMatchesSection = ({ itemId, type }) => {
 
   if (loading) {
     return (
-      <div style={styles.loadingContainer}>
-        <div style={styles.pulseTitle}>🤖 AI Smart Engine analyzing similarity parameters...</div>
-        <div style={styles.skeletonGrid}>
+      <div className="mt-10 bg-slate-900/30 border border-slate-800 rounded-2xl p-6 shadow-xl">
+        <div className="text-sm font-semibold text-slate-400 mb-6 flex items-center gap-2">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+          </span>
+          <span>🤖 AI Smart Engine analyzing similarity parameters...</span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[1, 2].map(n => (
-            <div key={n} style={styles.skeletonCard}>
-              <div style={styles.skeletonImage}></div>
-              <div style={styles.skeletonTextRow}></div>
-              <div style={styles.skeletonTextRowShort}></div>
+            <div key={n} className="bg-slate-900/40 border border-slate-850 rounded-xl p-5 flex flex-col gap-4 animate-pulse">
+              <div className="h-28 bg-slate-800/60 rounded-lg" />
+              <div className="h-4 bg-slate-800/60 rounded w-3/4" />
+              <div className="h-4 bg-slate-800/60 rounded w-1/2" />
             </div>
           ))}
         </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../services/api';
 import { AuthContext } from '../context/AuthContext';
+import { showSuccess, showError } from '../utils/toast';
 
 const BookmarkButton = ({ itemId, itemModel, initialIsFavorited = false, onToggle }) => {
   const { user } = useContext(AuthContext);
@@ -30,14 +31,17 @@ const BookmarkButton = ({ itemId, itemModel, initialIsFavorited = false, onToggl
       if (isFavorited) {
         await API.delete(`/favorites/${itemId}`);
         setIsFavorited(false);
+        showSuccess('Removed from bookmarks.');
         if (onToggle) onToggle(itemId, false);
       } else {
         await API.post(`/favorites/${itemId}`, { itemModel });
         setIsFavorited(true);
+        showSuccess('Saved to bookmarks!');
         if (onToggle) onToggle(itemId, true);
       }
     } catch (err) {
       console.error('Error toggling bookmark status:', err);
+      showError(err.response?.data?.message || 'Failed to update bookmark.');
     } finally {
       setLoading(false);
     }

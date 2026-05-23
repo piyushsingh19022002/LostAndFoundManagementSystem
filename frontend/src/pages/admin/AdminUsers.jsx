@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import API from '../../services/api';
+import TableSkeleton from '../../components/ui/TableSkeleton';
 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
@@ -129,9 +130,8 @@ const AdminUsers = () => {
       )}
 
       {loading ? (
-        <div style={styles.loadingContainer}>
-          <div style={styles.spinner}></div>
-          <p style={{ marginTop: '16px', color: '#9ca3af' }}>Retrieving account logs...</p>
+        <div className="w-full">
+          <TableSkeleton rows={6} cols={5} />
         </div>
       ) : error ? (
         <div style={styles.errorBanner}>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import API from '../../services/api';
+import AnalyticsSkeleton from '../../components/ui/AnalyticsSkeleton';
 import {
   AreaChart,
   Area,
@@ -57,11 +58,14 @@ const Analytics = () => {
 
   if (loading && !dashboardData) {
     return (
-      <div style={styles.loadingContainer}>
-        <div style={styles.spinner}></div>
-        <p style={{ marginTop: '16px', color: '#9ca3af', fontWeight: '500' }}>
-          Loading platform intelligence...
-        </p>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-6">
+          <div>
+            <h1 className="text-3xl font-extrabold text-white">Platform Intelligence</h1>
+            <p className="text-sm text-slate-400">Loading business intelligence dashboard analytics...</p>
+          </div>
+        </div>
+        <AnalyticsSkeleton />
       </div>
     );
   }

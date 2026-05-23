@@ -1,161 +1,106 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink, Outlet, Link } from 'react-router-dom';
+import { 
+  FiPieChart, FiTrendingUp, FiUsers, FiSearch, 
+  FiArrowLeft, FiShield, FiMenu, FiX 
+} from 'react-icons/fi';
 
 const AdminLayout = () => {
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  const navItems = [
+    { to: "/admin", end: true, label: "Overview", icon: FiPieChart },
+    { to: "/admin/analytics", label: "Analytics", icon: FiTrendingUp },
+    { to: "/admin/users", label: "Users", icon: FiUsers },
+    { to: "/admin/items", label: "Items", icon: FiSearch },
+  ];
+
   return (
-    <div style={styles.container}>
-      {/* Sidebar Navigation */}
-      <aside style={styles.sidebar}>
-        <div style={styles.brandContainer}>
-          <span style={styles.brandIcon}>🛡️</span>
-          <h2 style={styles.brandTitle}>Admin Panel</h2>
+    <div className="flex flex-col md:flex-row min-h-[85vh] bg-slate-950 text-slate-100 rounded-2xl overflow-hidden border border-slate-800 shadow-2xl relative">
+      {/* Mobile Sidebar Header */}
+      <div className="flex items-center justify-between px-6 py-4 md:hidden bg-slate-900 border-b border-slate-800">
+        <div className="flex items-center gap-3">
+          <FiShield className="w-6 h-6 text-rose-500" />
+          <span className="font-extrabold text-lg bg-gradient-to-r from-rose-400 to-pink-500 bg-clip-text text-transparent">
+            Admin Panel
+          </span>
         </div>
-        
-        <nav style={styles.nav}>
-          <NavLink 
-            to="/admin" 
-            end
-            style={({ isActive }) => ({
-              ...styles.navLink,
-              ...(isActive ? styles.navLinkActive : {})
-            })}
-          >
-            <span style={styles.navIcon}>📊</span> Overview
-          </NavLink>
-          <NavLink 
-            to="/admin/analytics" 
-            style={({ isActive }) => ({
-              ...styles.navLink,
-              ...(isActive ? styles.navLinkActive : {})
-            })}
-          >
-            <span style={styles.navIcon}>📈</span> Analytics
-          </NavLink>
-          <NavLink 
-            to="/admin/users" 
-            style={({ isActive }) => ({
-              ...styles.navLink,
-              ...(isActive ? styles.navLinkActive : {})
-            })}
-          >
-            <span style={styles.navIcon}>👥</span> Users
-          </NavLink>
-          <NavLink 
-            to="/admin/items" 
-            style={({ isActive }) => ({
-              ...styles.navLink,
-              ...(isActive ? styles.navLinkActive : {})
-            })}
-          >
-            <span style={styles.navIcon}>🔍</span> Items
-          </NavLink>
+        <button 
+          onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+          className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors border border-slate-700"
+          aria-label="Toggle admin menu"
+        >
+          {isMobileSidebarOpen ? <FiX className="w-5 h-5" /> : <FiMenu className="w-5 h-5" />}
+        </button>
+      </div>
+
+      {/* Sidebar Navigation */}
+      <aside className={`
+        fixed inset-y-0 left-0 z-40 w-64 bg-slate-900/95 backdrop-blur-md md:backdrop-blur-none border-r border-slate-800 p-6 flex flex-col transition-transform duration-300 transform
+        md:translate-x-0 md:static md:h-auto
+        ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        {/* Brand Header (Desktop only) */}
+        <div className="hidden md:flex items-center gap-3 mb-10">
+          <div className="p-2 bg-rose-500/10 rounded-lg border border-rose-500/20">
+            <FiShield className="w-6 h-6 text-rose-500" />
+          </div>
+          <h2 className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-rose-400 to-pink-500 bg-clip-text text-transparent">
+            Admin Panel
+          </h2>
+        </div>
+
+        {/* Navigation Links */}
+        <nav className="flex flex-col gap-2 flex-1">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink 
+                key={item.to}
+                to={item.to} 
+                end={item.end}
+                onClick={() => setIsMobileSidebarOpen(false)}
+                className={({ isActive }) => `
+                  flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 border
+                  ${isActive 
+                    ? 'bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-md shadow-rose-500/5' 
+                    : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/50 border-transparent'
+                  }
+                `}
+              >
+                <Icon className="w-4 h-4" />
+                {item.label}
+              </NavLink>
+            );
+          })}
         </nav>
 
-        <div style={styles.footerContainer}>
-          <Link to="/dashboard" style={styles.backBtn}>
-            &larr; Back to App
+        {/* Footer Container */}
+        <div className="mt-auto border-t border-slate-800 pt-6">
+          <Link 
+            to="/dashboard" 
+            className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-slate-850 hover:bg-slate-800 text-slate-200 hover:text-white text-sm font-bold border border-slate-800 hover:border-slate-700 transition-all duration-200"
+          >
+            <FiArrowLeft className="w-4 h-4" />
+            Back to App
           </Link>
         </div>
       </aside>
 
+      {/* Overlay Backdrop for Mobile Menu */}
+      {isMobileSidebarOpen && (
+        <div 
+          onClick={() => setIsMobileSidebarOpen(false)}
+          className="fixed inset-0 z-30 bg-black/60 md:hidden backdrop-blur-sm"
+        />
+      )}
+
       {/* Main Content Area */}
-      <main style={styles.mainContent}>
+      <main className="flex-1 p-6 md:p-10 overflow-y-auto max-w-full">
         <Outlet />
       </main>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    display: 'flex',
-    minHeight: '85vh',
-    background: 'radial-gradient(circle at 70% 20%, #111827 0%, #030712 100%)',
-    fontFamily: "'Outfit', 'Inter', sans-serif",
-    color: '#ffffff',
-    borderRadius: '16px',
-    overflow: 'hidden',
-    border: '1px solid rgba(255, 255, 255, 0.05)',
-  },
-  sidebar: {
-    width: '260px',
-    backgroundColor: 'rgba(17, 24, 39, 0.7)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-    borderRight: '1px solid rgba(255, 255, 255, 0.05)',
-    display: 'flex',
-    flexDirection: 'column',
-    padding: '30px 20px',
-  },
-  brandContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    marginBottom: '40px',
-  },
-  brandIcon: {
-    fontSize: '1.8rem',
-  },
-  brandTitle: {
-    fontSize: '1.3rem',
-    fontWeight: '800',
-    color: '#ffffff',
-    margin: 0,
-    letterSpacing: '-0.02em',
-    background: 'linear-gradient(to right, #f43f5e, #ec4899)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-  },
-  nav: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-    flex: 1,
-  },
-  navLink: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    padding: '12px 16px',
-    borderRadius: '8px',
-    color: '#9ca3af',
-    textDecoration: 'none',
-    fontWeight: '600',
-    fontSize: '0.95rem',
-    transition: 'all 0.2s ease',
-  },
-  navLinkActive: {
-    backgroundColor: 'rgba(244, 63, 94, 0.15)',
-    color: '#f43f5e',
-    border: '1px solid rgba(244, 63, 94, 0.3)',
-    boxShadow: '0 4px 15px rgba(244, 63, 94, 0.1)',
-  },
-  navIcon: {
-    fontSize: '1.1rem',
-  },
-  footerContainer: {
-    marginTop: 'auto',
-    borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-    paddingTop: '20px',
-  },
-  backBtn: {
-    display: 'block',
-    textAlign: 'center',
-    padding: '10px 16px',
-    borderRadius: '8px',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    color: '#ffffff',
-    textDecoration: 'none',
-    fontSize: '0.9rem',
-    fontWeight: '700',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    transition: 'all 0.2s ease',
-  },
-  mainContent: {
-    flex: 1,
-    padding: '40px',
-    overflowY: 'auto',
-  },
 };
 
 export default AdminLayout;
