@@ -25,10 +25,9 @@ const io = new Server(server, {
 });
 
 // Middleware cors test
-app.use(cors({ credentials: true }));
+app.use(cors());
 app.use(express.json());
-
-// Test route
+// Test route endpoint
 app.get('/', (req, res) => {
   res.json({ message: "API is running" });
 });
@@ -42,6 +41,7 @@ app.use('/api/claims', require('./routes/claimRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/messages', require('./routes/messageRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/admin/analytics', require('./routes/analyticsRoutes'));
 app.use('/api/favorites', require('./routes/favoriteRoutes'));
 
 // Socket.io JWT Authentication Middleware

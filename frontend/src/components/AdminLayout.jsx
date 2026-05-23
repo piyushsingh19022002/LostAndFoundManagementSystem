@@ -23,6 +23,15 @@ const AdminLayout = () => {
             <span style={styles.navIcon}>📊</span> Overview
           </NavLink>
           <NavLink 
+            to="/admin/analytics" 
+            style={({ isActive }) => ({
+              ...styles.navLink,
+              ...(isActive ? styles.navLinkActive : {})
+            })}
+          >
+            <span style={styles.navIcon}>📈</span> Analytics
+          </NavLink>
+          <NavLink 
             to="/admin/users" 
             style={({ isActive }) => ({
               ...styles.navLink,

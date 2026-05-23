@@ -29,6 +29,7 @@ import AdminLayout from '../components/AdminLayout';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import AdminUsers from '../pages/admin/AdminUsers';
 import AdminItems from '../pages/admin/AdminItems';
+import Analytics from '../pages/admin/Analytics';
 import Favorites from '../pages/Favorites';
 
 
@@ -155,6 +156,7 @@ const AppRoutes = () => {
             <Route index element={<AdminDashboard />} />
             <Route path="users" element={<AdminUsers />} />
             <Route path="items" element={<AdminItems />} />
+            <Route path="analytics" element={<Analytics />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
