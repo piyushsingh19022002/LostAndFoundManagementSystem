@@ -41,6 +41,7 @@ app.use('/api/upload', require('./routes/uploadRoutes'));
 app.use('/api/claims', require('./routes/claimRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/messages', require('./routes/messageRoutes'));
+app.use('/api/admin', require('./routes/adminRoutes'));
 
 // Socket.io JWT Authentication Middleware
 io.use((socket, next) => {

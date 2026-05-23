@@ -24,6 +24,11 @@ import Notifications from '../pages/Notifications';
 import Chat from '../pages/Chat';
 import ForgotPassword from '../pages/ForgotPassword';
 import ResetPassword from '../pages/ResetPassword';
+import AdminRoute from './AdminRoute';
+import AdminLayout from '../components/AdminLayout';
+import AdminDashboard from '../pages/admin/AdminDashboard';
+import AdminUsers from '../pages/admin/AdminUsers';
+import AdminItems from '../pages/admin/AdminItems';
 
 
 const AppRoutes = () => {
@@ -130,6 +135,18 @@ const AppRoutes = () => {
               </ProtectedRoute>
             } 
           />
+          <Route 
+            path="/admin" 
+            element={
+              <AdminRoute>
+                <AdminLayout />
+              </AdminRoute>
+            }
+          >
+            <Route index element={<AdminDashboard />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="items" element={<AdminItems />} />
+          </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

@@ -79,6 +79,9 @@ const Navbar = () => {
               )}
             </Link>
 
+            {user.role === 'admin' && (
+              <Link to="/admin" style={{ color: '#f43f5e', fontWeight: 'bold', textDecoration: 'none' }}>🛡️ Admin Panel</Link>
+            )}
             <Link to="/dashboard" style={{ color: '#61dafb', textDecoration: 'none' }}>Dashboard</Link>
             <Link to="/my-items" style={{ color: '#eab308', textDecoration: 'none' }}>My Items</Link>
             <Link to="/my-claims" style={{ color: '#a78bfa', textDecoration: 'none' }}>My Claims</Link>
