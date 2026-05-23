@@ -6,6 +6,7 @@ const {
   getDashboardStats,
   forgotPassword,
   resetPassword,
+  getMe,
 } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 
@@ -15,5 +16,6 @@ router.post('/login', loginUser);
 router.get('/dashboard-stats', protect, getDashboardStats);
 router.post('/forgot-password', forgotPassword);
 router.put('/reset-password/:token', resetPassword);
+router.get('/me', protect, getMe);
 
 module.exports = router;

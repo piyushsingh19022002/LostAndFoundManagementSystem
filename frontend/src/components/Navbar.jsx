@@ -85,6 +85,7 @@ const Navbar = () => {
             <Link to="/dashboard" style={{ color: '#61dafb', textDecoration: 'none' }}>Dashboard</Link>
             <Link to="/my-items" style={{ color: '#eab308', textDecoration: 'none' }}>My Items</Link>
             <Link to="/my-claims" style={{ color: '#a78bfa', textDecoration: 'none' }}>My Claims</Link>
+            <Link to="/favorites" style={{ color: '#f43f5e', textDecoration: 'none' }}>Bookmarks</Link>
             <Link to="/received-claims" style={{ color: '#fca5a5', textDecoration: 'none' }}>Received Claims</Link>
             <Link to="/lost-items" style={{ color: '#61dafb', textDecoration: 'none' }}>Lost Items</Link>
             <Link to="/found-items" style={{ color: '#34d399', textDecoration: 'none' }}>Found Items</Link>

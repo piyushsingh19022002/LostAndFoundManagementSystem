@@ -1,9 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import BookmarkButton from './BookmarkButton';
 
 // FoundItemCard — reusable presentational component for the found items feed grid.
 // Receives a single 'item' prop matching the FoundItem MongoDB document shape.
-const FoundItemCard = ({ item }) => {
+const FoundItemCard = ({ item, isFavorited = false, onBookmarkToggle }) => {
   const formattedDate = new Date(item.dateFound).toLocaleDateString(undefined, {
     year: 'numeric',
     month: 'long',
@@ -19,6 +20,16 @@ const FoundItemCard = ({ item }) => {
 
   return (
     <div style={styles.card}>
+      {/* Bookmark Button */}
+      <div style={styles.bookmarkWrapper}>
+        <BookmarkButton
+          itemId={item._id}
+          itemModel="FoundItem"
+          initialIsFavorited={isFavorited}
+          onToggle={onBookmarkToggle}
+        />
+      </div>
+
       {/* Floating Badges */}
       <div style={styles.badgeContainer}>
         <span style={{
@@ -102,6 +113,12 @@ const styles = {
     fontFamily: "'Outfit', 'Inter', sans-serif",
     height: '100%',
     position: 'relative',
+  },
+  bookmarkWrapper: {
+    position: 'absolute',
+    top: '12px',
+    right: '12px',
+    zIndex: 15,
   },
   badgeContainer: {
     display: 'flex',

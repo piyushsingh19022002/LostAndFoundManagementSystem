@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import API from '../services/api';
 import Loader from '../components/Loader';
 import { AuthContext } from '../context/AuthContext';
+import BookmarkButton from '../components/BookmarkButton';
 
 const LostItemDetails = () => {
   // 1. Params Extraction
@@ -14,6 +15,7 @@ const LostItemDetails = () => {
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isFavorited, setIsFavorited] = useState(false);
 
   // 3. Fetch Single Item Details
   useEffect(() => {
@@ -23,6 +25,12 @@ const LostItemDetails = () => {
         const response = await API.get(`/lost-items/${id}`);
         setItem(response.data);
         setError('');
+
+        if (currentUser) {
+          const favsRes = await API.get('/favorites');
+          const isFav = favsRes.data.some(f => f.item?._id === id || f.item === id);
+          setIsFavorited(isFav);
+        }
       } catch (err) {
         console.error('Error fetching item details:', err);
         setError(err.response?.data?.message || 'Failed to retrieve item details. It might have been deleted or the ID is invalid.');
@@ -34,7 +42,7 @@ const LostItemDetails = () => {
     if (id) {
       fetchItemDetails();
     }
-  }, [id]);
+  }, [id, currentUser]);
 
   // 4. Verification of Ownership (for Edit/Delete actions in future stages)
   const isOwner = item && currentUser && item.user && (
@@ -164,7 +172,16 @@ const LostItemDetails = () => {
               </span>
             </div>
 
-            <h1 style={styles.title}>{item.title}</h1>
+            <div style={styles.titleContainer}>
+              <h1 style={styles.title}>{item.title}</h1>
+              {currentUser && (
+                <BookmarkButton
+                  itemId={item._id}
+                  itemModel="Item"
+                  initialIsFavorited={isFavorited}
+                />
+              )}
+            </div>
 
             <div style={styles.metaSection}>
               <div style={styles.metaRow}>
@@ -349,9 +366,16 @@ const styles = {
     fontSize: '2.25rem',
     fontWeight: '800',
     color: '#ffffff',
-    margin: '0 0 20px 0',
+    margin: 0,
     lineHeight: '1.25',
     letterSpacing: '-0.02em',
+  },
+  titleContainer: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: '16px',
+    marginBottom: '20px',
   },
   metaSection: {
     display: 'flex',

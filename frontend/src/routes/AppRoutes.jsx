@@ -29,6 +29,7 @@ import AdminLayout from '../components/AdminLayout';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import AdminUsers from '../pages/admin/AdminUsers';
 import AdminItems from '../pages/admin/AdminItems';
+import Favorites from '../pages/Favorites';
 
 
 const AppRoutes = () => {
@@ -47,6 +48,14 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/favorites" 
+            element={
+              <ProtectedRoute>
+                <Favorites />
               </ProtectedRoute>
             } 
           />

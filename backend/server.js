@@ -25,7 +25,7 @@ const io = new Server(server, {
 });
 
 // Middleware cors test
-app.use(cors());
+app.use(cors({ credentials: true }));
 app.use(express.json());
 
 // Test route
@@ -42,6 +42,7 @@ app.use('/api/claims', require('./routes/claimRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/messages', require('./routes/messageRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/favorites', require('./routes/favoriteRoutes'));
 
 // Socket.io JWT Authentication Middleware
 io.use((socket, next) => {

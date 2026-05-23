@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../services/api';
 import FoundItemCard from '../components/FoundItemCard';
@@ -6,11 +6,41 @@ import ItemCardSkeleton from '../components/ItemCardSkeleton';
 import SearchBar from '../components/SearchBar';
 import CategoryFilter from '../components/CategoryFilter';
 import { FOUND_ITEM_STATUSES, FOUND_STATUS_OPTIONS } from '../constants/categories';
+import { AuthContext } from '../context/AuthContext';
 
 const FoundItems = () => {
   const [items, setItems]       = useState([]);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState('');
+
+  const { user } = useContext(AuthContext);
+  const [favorites, setFavorites] = useState([]);
+
+  // Fetch all bookmarks to highlight already saved listings on mount
+  const fetchFavorites = useCallback(async () => {
+    if (!user) {
+      setFavorites([]);
+      return;
+    }
+    try {
+      const res = await API.get('/favorites');
+      setFavorites(res.data || []);
+    } catch (err) {
+      console.error('Error fetching favorites:', err);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchFavorites();
+  }, [fetchFavorites]);
+
+  const handleBookmarkToggle = (itemId, isFav) => {
+    if (isFav) {
+      setFavorites(prev => [...prev, { item: { _id: itemId } }]);
+    } else {
+      setFavorites(prev => prev.filter(f => f.item?._id !== itemId && f.item !== itemId));
+    }
+  };
 
   // Filter states — each drives the backend query params
   const [search, setSearch]     = useState('');
@@ -168,7 +198,12 @@ const FoundItems = () => {
         <>
           <div style={styles.grid}>
             {items.map((item) => (
-              <FoundItemCard key={item._id} item={item} />
+              <FoundItemCard
+                key={item._id}
+                item={item}
+                isFavorited={favorites.some(f => f.item?._id === item._id || f.item === item._id)}
+                onBookmarkToggle={handleBookmarkToggle}
+              />
             ))}
           </div>
 

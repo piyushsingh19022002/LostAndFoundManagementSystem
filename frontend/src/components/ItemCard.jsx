@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import BookmarkButton from './BookmarkButton';
 
-const ItemCard = ({ item }) => {
+const ItemCard = ({ item, isFavorited = false, onBookmarkToggle }) => {
   const isLost = item.category === 'Lost';
   const formattedDate = new Date(item.date).toLocaleDateString(undefined, {
     year: 'numeric',
@@ -11,6 +12,16 @@ const ItemCard = ({ item }) => {
 
   return (
     <div style={styles.card}>
+      {/* Bookmark Button */}
+      <div style={styles.bookmarkWrapper}>
+        <BookmarkButton
+          itemId={item._id}
+          itemModel="Item"
+          initialIsFavorited={isFavorited}
+          onToggle={onBookmarkToggle}
+        />
+      </div>
+
       {/* Category Badge */}
       <div style={styles.badgeContainer}>
         <span style={{
@@ -79,6 +90,13 @@ const styles = {
     boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)',
     fontFamily: "'Outfit', 'Inter', sans-serif",
     height: '100%',
+    position: 'relative',
+  },
+  bookmarkWrapper: {
+    position: 'absolute',
+    top: '12px',
+    right: '12px',
+    zIndex: 15,
   },
   badgeContainer: {
     display: 'flex',

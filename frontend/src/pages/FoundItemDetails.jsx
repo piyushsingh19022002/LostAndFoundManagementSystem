@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import API from '../services/api';
 import Loader from '../components/Loader';
 import { AuthContext } from '../context/AuthContext';
+import BookmarkButton from '../components/BookmarkButton';
 
 const FoundItemDetails = () => {
   const { id } = useParams();
@@ -12,6 +13,7 @@ const FoundItemDetails = () => {
   const [item, setItem]       = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState('');
+  const [isFavorited, setIsFavorited] = useState(false);
 
   // Fetch found item by ID whenever route param changes
   useEffect(() => {
@@ -21,6 +23,12 @@ const FoundItemDetails = () => {
         const response = await API.get(`/found-items/${id}`);
         setItem(response.data);
         setError('');
+
+        if (currentUser) {
+          const favsRes = await API.get('/favorites');
+          const isFav = favsRes.data.some(f => f.item?._id === id || f.item === id);
+          setIsFavorited(isFav);
+        }
       } catch (err) {
         setError(
           err.response?.data?.message ||
@@ -32,7 +40,7 @@ const FoundItemDetails = () => {
     };
 
     if (id) fetchItem();
-  }, [id]);
+  }, [id, currentUser]);
 
   // Ownership check — handles both populated and non-populated user references
   const isOwner =
@@ -142,7 +150,16 @@ const FoundItemDetails = () => {
               </span>
             </div>
 
-            <h1 style={styles.title}>{item.title}</h1>
+            <div style={styles.titleContainer}>
+              <h1 style={styles.title}>{item.title}</h1>
+              {currentUser && (
+                <BookmarkButton
+                  itemId={item._id}
+                  itemModel="FoundItem"
+                  initialIsFavorited={isFavorited}
+                />
+              )}
+            </div>
 
             <div style={styles.metaSection}>
               <div style={styles.metaRow}>
@@ -272,7 +289,14 @@ const styles = {
   badgeRow: { display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '20px' },
   categoryBadge: { padding: '6px 14px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' },
   statusBadge: { padding: '6px 14px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '700' },
-  title: { fontSize: '2.25rem', fontWeight: '800', color: '#ffffff', margin: '0 0 20px 0', lineHeight: '1.25', letterSpacing: '-0.02em' },
+  title: { fontSize: '2.25rem', fontWeight: '800', color: '#ffffff', margin: 0, lineHeight: '1.25', letterSpacing: '-0.02em' },
+  titleContainer: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: '16px',
+    marginBottom: '20px',
+  },
   metaSection: { display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' },
   metaRow: { display: 'flex', alignItems: 'center', fontSize: '0.95rem' },
   metaLabel: { color: '#9ca3af', fontWeight: '600', width: '110px' },
