@@ -4,6 +4,7 @@ import API from '../services/api';
 import Loader from '../components/Loader';
 import { AuthContext } from '../context/AuthContext';
 import BookmarkButton from '../components/BookmarkButton';
+import AIMatchesSection from '../components/AIMatchesSection';
 
 const FoundItemDetails = () => {
   const { id } = useParams();
@@ -239,6 +240,10 @@ const FoundItemDetails = () => {
             )}
           </div>
         </div>
+
+        {/* AI Recommendations Panel */}
+        <AIMatchesSection itemId={id} type="found" />
+
       </div>
     </div>
   );

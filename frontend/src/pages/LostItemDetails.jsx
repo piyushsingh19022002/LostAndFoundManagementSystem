@@ -4,6 +4,7 @@ import API from '../services/api';
 import Loader from '../components/Loader';
 import { AuthContext } from '../context/AuthContext';
 import BookmarkButton from '../components/BookmarkButton';
+import AIMatchesSection from '../components/AIMatchesSection';
 
 const LostItemDetails = () => {
   // 1. Params Extraction
@@ -266,6 +267,9 @@ const LostItemDetails = () => {
 
           </div>
         </div>
+
+        {/* AI Recommendations Panel */}
+        <AIMatchesSection itemId={id} type="lost" />
 
       </div>
     </div>

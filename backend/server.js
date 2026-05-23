@@ -43,6 +43,7 @@ app.use('/api/messages', require('./routes/messageRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/admin/analytics', require('./routes/analyticsRoutes'));
 app.use('/api/favorites', require('./routes/favoriteRoutes'));
+app.use('/api/matches', require('./routes/matchRoutes'));
 
 // Socket.io JWT Authentication Middleware
 io.use((socket, next) => {

@@ -14,7 +14,7 @@ const ViewItems = () => {
     const fetchItems = async () => {
       try {
         const response = await API.get('/lost-items');
-        setItems(response.data);
+        setItems(response.data.items || response.data || []);
         setLoading(false);
       } catch (err) {
         setError('Failed to fetch items');
