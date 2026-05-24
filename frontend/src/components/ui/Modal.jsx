@@ -30,18 +30,18 @@ const Modal = ({
       {/* Backdrop */}
       <div 
         onClick={onClose}
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
+        className="absolute inset-0 bg-slate-950/70 backdrop-blur-md transition-opacity duration-300"
       />
       
       {/* Modal Container */}
-      <div className={`relative w-full max-w-lg bg-gray-900 border border-white/10 rounded-2xl p-6 shadow-2xl z-10 transform scale-95 opacity-0 animate-scaleUp overflow-y-auto max-h-[90vh] ${className}`}>
+      <div className={`relative w-full max-w-lg glass-panel rounded-3xl p-6 shadow-2xl z-10 transform scale-95 opacity-0 animate-scaleUp overflow-y-auto max-h-[90vh] ${className}`}>
         
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          {title && <h3 className="text-lg font-bold text-white">{title}</h3>}
+          {title && <h3 className="text-lg font-bold text-[var(--text-primary)] font-sans tracking-wide">{title}</h3>}
           <button 
             onClick={onClose}
-            className="text-gray-400 hover:text-white p-1 hover:bg-white/5 rounded-lg transition-all"
+            className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-1.5 hover:bg-[var(--border-subtle)] rounded-full transition-all cursor-pointer"
             aria-label="Close modal"
           >
             ✕

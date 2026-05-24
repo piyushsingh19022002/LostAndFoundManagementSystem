@@ -1,15 +1,17 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { ThemeContext } from '../context/ThemeContext';
 import API from '../services/api';
 import { 
   FiMenu, FiX, FiBell, FiUser, FiLogOut, FiLayout, 
   FiHeart, FiPlusCircle, FiSearch, FiShield, FiFileText, 
-  FiTrendingUp, FiSettings, FiPlus 
+  FiTrendingUp, FiSettings, FiPlus, FiSun, FiMoon 
 } from 'react-icons/fi';
 
 const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
+  const { theme, toggleTheme } = useContext(ThemeContext);
   const navigate = useNavigate();
   const location = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
@@ -64,41 +66,43 @@ const Navbar = () => {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <nav className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 text-slate-100 shadow-lg">
+    <nav className="sticky top-4 z-50 mx-4 md:mx-auto max-w-7xl glass-panel rounded-full text-slate-100 transition-all duration-300 shadow-xl px-2 mt-4">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-14">
           {/* Brand/Logo */}
           <div className="flex-shrink-0 flex items-center">
-            <Link to="/" className="flex items-center gap-2 group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-500 to-indigo-600 flex items-center justify-content justify-center shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform duration-300">
-                <span className="text-xl font-bold text-white">F</span>
+            <Link to="/" className="flex items-center gap-2.5 group">
+              <div className="w-9 h-9 border border-[var(--accent-primary)]/30 flex items-center justify-center font-mono text-xs font-bold text-[var(--accent-primary)] tracking-wider transition-all duration-500 group-hover:border-[var(--accent-primary)] group-hover:shadow-[0_0_12px_var(--glow-color)] rounded-full bg-slate-950/20">
+                F //
               </div>
-              <span className="ml-2 text-xl font-extrabold tracking-tight bg-gradient-to-r from-rose-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent group-hover:opacity-90 transition-opacity">
+              <span className="text-xs font-bold tracking-[0.25em] uppercase font-sans text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors">
                 FoundIt
               </span>
             </Link>
           </div>
 
           {/* Desktop Core Links */}
-          <div className="hidden md:flex items-center space-x-1">
+          <div className="hidden md:flex items-center space-x-1.5">
             <Link 
               to="/lost-items" 
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+              className={`px-4 py-2.5 rounded-full font-mono text-[10px] uppercase tracking-wider transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center gap-1.5 ${
                 isActive('/lost-items') 
-                  ? 'bg-slate-800/80 text-rose-400 shadow-sm border border-slate-700/50' 
-                  : 'text-slate-300 hover:text-slate-100 hover:bg-slate-900'
+                  ? 'bg-[var(--text-primary)] text-[var(--bg-primary)] font-bold shadow-md' 
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border-subtle)]'
               }`}
             >
+              <FiSearch className="w-3.5 h-3.5" />
               Lost Items
             </Link>
             <Link 
               to="/found-items" 
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+              className={`px-4 py-2.5 rounded-full font-mono text-[10px] uppercase tracking-wider transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center gap-1.5 ${
                 isActive('/found-items') 
-                  ? 'bg-slate-800/80 text-emerald-400 shadow-sm border border-slate-700/50' 
-                  : 'text-slate-300 hover:text-slate-100 hover:bg-slate-900'
+                  ? 'bg-[var(--text-primary)] text-[var(--bg-primary)] font-bold shadow-md' 
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border-subtle)]'
               }`}
             >
+              <FiPlus className="w-3.5 h-3.5" />
               Found Items
             </Link>
 
@@ -106,22 +110,24 @@ const Navbar = () => {
               <>
                 <Link 
                   to="/dashboard" 
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  className={`px-4 py-2.5 rounded-full font-mono text-[10px] uppercase tracking-wider transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center gap-1.5 ${
                     isActive('/dashboard') 
-                      ? 'bg-slate-800/80 text-indigo-400 shadow-sm border border-slate-700/50' 
-                      : 'text-slate-300 hover:text-slate-100 hover:bg-slate-900'
+                      ? 'bg-[var(--text-primary)] text-[var(--bg-primary)] font-bold shadow-md' 
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border-subtle)]'
                   }`}
                 >
+                  <FiLayout className="w-3.5 h-3.5" />
                   Dashboard
                 </Link>
                 <Link 
                   to="/favorites" 
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  className={`px-4 py-2.5 rounded-full font-mono text-[10px] uppercase tracking-wider transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center gap-1.5 ${
                     isActive('/favorites') 
-                      ? 'bg-slate-800/80 text-rose-400 shadow-sm border border-slate-700/50' 
-                      : 'text-slate-300 hover:text-slate-100 hover:bg-slate-900'
+                      ? 'bg-[var(--text-primary)] text-[var(--bg-primary)] font-bold shadow-md' 
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border-subtle)]'
                   }`}
                 >
+                  <FiHeart className="w-3.5 h-3.5" />
                   Bookmarks
                 </Link>
               </>
@@ -129,18 +135,27 @@ const Navbar = () => {
           </div>
 
           {/* Desktop Right Hand Side Actions */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-3">
+            {/* Theme Toggle Button */}
+            <button 
+              onClick={toggleTheme}
+              className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-slate-950/20 hover:bg-slate-900/30 border border-border-subtle rounded-full transition-all duration-400 focus:outline-none cursor-pointer"
+              title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+            >
+              {theme === 'light' ? <FiMoon className="w-4 h-4" /> : <FiSun className="w-4 h-4" />}
+            </button>
+
             {user ? (
               <>
                 {/* Notification Bell Icon */}
                 <Link 
                   to="/notifications" 
-                  className="relative p-2 text-slate-400 hover:text-slate-100 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl transition-all duration-200"
+                  className="relative p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-slate-950/20 hover:bg-slate-900/30 border border-border-subtle rounded-full transition-all duration-400"
                   title="Notifications"
                 >
-                  <FiBell className="w-5 h-5" />
+                  <FiBell className="w-4 h-4" />
                   {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-slate-950 animate-pulse">
+                    <span className="absolute -top-0.5 -right-0.5 bg-rose-500 text-white text-[8px] font-mono font-bold rounded-full w-3.5 h-3.5 flex items-center justify-center animate-pulse">
                       {unreadCount}
                     </span>
                   )}
@@ -150,85 +165,85 @@ const Navbar = () => {
                 <div className="relative" ref={profileRef}>
                   <button 
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
-                    className="flex items-center gap-2 p-1.5 pr-3 text-slate-300 hover:text-slate-100 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl transition-all duration-200 focus:outline-none"
+                    className="flex items-center gap-2 p-1 pr-3 text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-slate-950/20 hover:bg-slate-900/30 border border-border-subtle rounded-full transition-all duration-400 focus:outline-none"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-rose-500 flex items-center justify-center text-white font-bold text-sm shadow">
+                    <div className="w-7 h-7 rounded-full border border-border-subtle bg-slate-950/30 flex items-center justify-center text-[var(--accent-primary)] font-mono text-xs font-bold shadow">
                       {user.name.charAt(0).toUpperCase()}
                     </div>
-                    <span className="text-sm font-semibold max-w-[100px] truncate">{user.name}</span>
-                    <svg className={`w-4 h-4 ml-1 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <span className="text-[10px] font-bold uppercase tracking-wider font-mono max-w-[80px] truncate">{user.name}</span>
+                    <svg className={`w-3 h-3 transition-transform duration-300 ${isProfileOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
 
                   {/* Profile Dropdown Menu */}
                   {isProfileOpen && (
-                    <div className="absolute right-0 mt-2 w-56 rounded-xl bg-slate-900/95 backdrop-blur-lg border border-slate-800 shadow-2xl py-2 text-slate-200 focus:outline-none ring-1 ring-black/5 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="absolute right-0 mt-3 w-56 rounded-2xl bg-[var(--bg-secondary)] border border-border-subtle shadow-2xl py-2 text-[var(--text-primary)] focus:outline-none ring-1 ring-black/5 animate-in fade-in slide-in-from-top-2 duration-300 backdrop-blur-xl">
                       {/* User Header */}
-                      <div className="px-4 py-2.5 border-b border-slate-800">
-                        <p className="text-xs text-slate-400 font-medium">Logged in as</p>
-                        <p className="text-sm font-bold truncate text-slate-200">{user.name}</p>
-                        <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                      <div className="px-4 py-2.5 border-b border-border-subtle font-mono">
+                        <p className="text-[9px] text-[var(--text-secondary)] uppercase tracking-widest font-bold">// User Registry</p>
+                        <p className="text-xs font-bold truncate text-[var(--text-primary)] mt-1">{user.name}</p>
+                        <p className="text-[10px] text-[var(--text-secondary)] truncate mt-0.5">{user.email}</p>
                       </div>
 
                       {/* Dropdown Options */}
-                      <div className="p-1">
+                      <div className="p-1 font-mono text-[10px] uppercase tracking-wider">
                         <Link 
                           to="/my-items" 
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-slate-100 hover:bg-slate-800/60 transition-colors"
+                          className="flex items-center gap-2 px-3 py-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border-subtle)] transition-colors"
                         >
-                          <FiLayout className="w-4 h-4 text-amber-400" />
+                          <FiLayout className="w-3.5 h-3.5" />
                           My Items
                         </Link>
                         <Link 
                           to="/my-claims" 
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-slate-100 hover:bg-slate-800/60 transition-colors"
+                          className="flex items-center gap-2 px-3 py-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border-subtle)] transition-colors"
                         >
-                          <FiFileText className="w-4 h-4 text-indigo-400" />
+                          <FiFileText className="w-3.5 h-3.5" />
                           My Claims
                         </Link>
                         <Link 
                           to="/received-claims" 
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-slate-100 hover:bg-slate-800/60 transition-colors"
+                          className="flex items-center gap-2 px-3 py-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border-subtle)] transition-colors"
                         >
-                          <FiFileText className="w-4 h-4 text-emerald-400" />
+                          <FiFileText className="w-3.5 h-3.5" />
                           Received Claims
                         </Link>
-                        <hr className="my-1 border-slate-800" />
+                        <hr className="my-1 border-border-subtle" />
                         <Link 
                           to="/add-lost-item" 
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-slate-100 hover:bg-slate-800/60 transition-colors"
+                          className="flex items-center gap-2 px-3 py-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border-subtle)] transition-colors"
                         >
-                          <FiPlusCircle className="w-4 h-4 text-rose-400" />
+                          <FiPlusCircle className="w-3.5 h-3.5" />
                           Add Lost Item
                         </Link>
                         <Link 
                           to="/add-found-item" 
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-slate-100 hover:bg-slate-800/60 transition-colors"
+                          className="flex items-center gap-2 px-3 py-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border-subtle)] transition-colors"
                         >
-                          <FiPlusCircle className="w-4 h-4 text-emerald-400" />
+                          <FiPlusCircle className="w-3.5 h-3.5" />
                           Add Found Item
                         </Link>
                         
                         {user.role === 'admin' && (
                           <>
-                            <hr className="my-1 border-slate-800" />
+                            <hr className="my-1 border-border-subtle" />
                             <Link 
                               to="/admin" 
-                              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-rose-400 hover:bg-slate-800/60 transition-colors"
+                              className="flex items-center gap-2 px-3 py-2 rounded-xl text-rose-500 hover:bg-rose-500/5 transition-colors animate-pulse"
                             >
-                              <FiShield className="w-4 h-4" />
+                              <FiShield className="w-3.5 h-3.5" />
                               🛡️ Admin Panel
                             </Link>
                           </>
                         )}
 
-                        <hr className="my-1 border-slate-800" />
+                        <hr className="my-1 border-border-subtle" />
                         <button 
                           onClick={handleLogout} 
-                          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors text-left"
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-rose-500 hover:bg-rose-500/5 transition-colors text-left font-mono cursor-pointer"
                         >
-                          <FiLogOut className="w-4 h-4" />
+                          <FiLogOut className="w-3.5 h-3.5" />
                           Logout
                         </button>
                       </div>
@@ -240,13 +255,13 @@ const Navbar = () => {
               <div className="flex items-center gap-3">
                 <Link 
                   to="/login" 
-                  className="px-4 py-2 text-sm font-semibold text-slate-300 hover:text-slate-100 transition-colors"
+                  className="px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                 >
                   Login
                 </Link>
                 <Link 
                   to="/register" 
-                  className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow shadow-indigo-500/10 hover:shadow-lg transition-all"
+                  className="px-5 py-2 font-mono text-[10px] uppercase tracking-wider text-slate-950 bg-[#F59E0B] hover:bg-[#F59E0B]/90 rounded-full transition-all duration-300 shadow-[0_4px_12px_rgba(245,158,11,0.2)]"
                 >
                   Register
                 </Link>
@@ -256,24 +271,33 @@ const Navbar = () => {
 
           {/* Mobile Hamburg/Close Button */}
           <div className="flex items-center gap-2 md:hidden">
+            {/* Mobile Theme Toggle Button */}
+            <button 
+              onClick={toggleTheme}
+              className="p-2 text-slate-400 hover:text-slate-100 bg-slate-950/40 border border-slate-850 rounded transition-all duration-300 focus:outline-none"
+              title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+            >
+              {theme === 'light' ? <FiMoon className="w-4 h-4" /> : <FiSun className="w-4 h-4" />}
+            </button>
+
             {user && (
               <Link 
                 to="/notifications" 
-                className="relative p-2 text-slate-400 hover:text-slate-100 bg-slate-900/60 border border-slate-800 rounded-lg transition-colors"
+                className="relative p-2 text-slate-400 hover:text-slate-100 bg-slate-950/60 border border-slate-850 rounded transition-all duration-300"
               >
-                <FiBell className="w-5 h-5" />
+                <FiBell className="w-4.5 h-4.5" />
                 {unreadCount > 0 && (
-                  <span className="absolute top-1 right-1 bg-rose-500 w-2.5 h-2.5 rounded-full border border-slate-950"></span>
+                  <span className="absolute top-1 right-1 bg-rose-500 w-2 h-2 rounded-full border border-slate-950"></span>
                 )}
               </Link>
             )}
             
             <button 
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 text-slate-400 hover:text-slate-100 bg-slate-900/60 border border-slate-800 rounded-lg hover:bg-slate-900 transition-colors"
+              className="p-2 text-slate-400 hover:text-slate-100 bg-slate-950/60 border border-slate-850 rounded hover:bg-slate-900 transition-all duration-300"
               aria-label="Toggle navigation menu"
             >
-              {isMobileMenuOpen ? <FiX className="w-6 h-6" /> : <FiMenu className="w-6 h-6" />}
+              {isMobileMenuOpen ? <FiX className="w-5 h-5" /> : <FiMenu className="w-5 h-5" />}
             </button>
           </div>
         </div>
@@ -281,24 +305,24 @@ const Navbar = () => {
 
       {/* Mobile Drawer Slide-Out Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-slate-950/95 border-t border-slate-800 animate-in slide-in-from-top duration-300">
-          <div className="px-2 pt-2 pb-3 space-y-1">
+        <div className="md:hidden bg-[var(--bg-secondary)] border-t border-border-subtle animate-in slide-in-from-top duration-300 rounded-b-3xl">
+          <div className="px-3 pt-3 pb-4 space-y-1 font-mono text-[10px] uppercase tracking-wider">
             <Link 
               to="/lost-items" 
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-base font-medium ${
-                isActive('/lost-items') ? 'bg-slate-900 text-rose-400' : 'text-slate-300 hover:bg-slate-900 hover:text-slate-100'
+              className={`flex items-center gap-3 px-4 py-2.5 rounded-full ${
+                isActive('/lost-items') ? 'bg-[var(--text-primary)] text-[var(--bg-primary)] font-bold' : 'text-[var(--text-secondary)] hover:bg-[var(--border-subtle)]'
               }`}
             >
-              <FiSearch className="w-5 h-5 text-rose-400" />
+              <FiSearch className="w-4 h-4 text-[var(--accent-primary)]" />
               Lost Items
             </Link>
             <Link 
               to="/found-items" 
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-base font-medium ${
-                isActive('/found-items') ? 'bg-slate-900 text-emerald-400' : 'text-slate-300 hover:bg-slate-900 hover:text-slate-100'
+              className={`flex items-center gap-3 px-4 py-2.5 rounded-full ${
+                isActive('/found-items') ? 'bg-[var(--text-primary)] text-[var(--bg-primary)] font-bold' : 'text-[var(--text-secondary)] hover:bg-[var(--border-subtle)]'
               }`}
             >
-              <FiSearch className="w-5 h-5 text-emerald-400" />
+              <FiPlus className="w-4 h-4 text-[var(--accent-primary)]" />
               Found Items
             </Link>
 
@@ -306,101 +330,101 @@ const Navbar = () => {
               <>
                 <Link 
                   to="/dashboard" 
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-base font-medium ${
-                    isActive('/dashboard') ? 'bg-slate-900 text-indigo-400' : 'text-slate-300 hover:bg-slate-900 hover:text-slate-100'
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-full ${
+                    isActive('/dashboard') ? 'bg-[var(--text-primary)] text-[var(--bg-primary)] font-bold' : 'text-[var(--text-secondary)] hover:bg-[var(--border-subtle)]'
                   }`}
                 >
-                  <FiLayout className="w-5 h-5 text-indigo-400" />
+                  <FiLayout className="w-4 h-4 text-[var(--accent-primary)]" />
                   Dashboard
                 </Link>
                 <Link 
                   to="/favorites" 
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-base font-medium ${
-                    isActive('/favorites') ? 'bg-slate-900 text-rose-400' : 'text-slate-300 hover:bg-slate-900 hover:text-slate-100'
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-full ${
+                    isActive('/favorites') ? 'bg-[var(--text-primary)] text-[var(--bg-primary)] font-bold' : 'text-[var(--text-secondary)] hover:bg-[var(--border-subtle)]'
                   }`}
                 >
-                  <FiHeart className="w-5 h-5 text-rose-400" />
+                  <FiHeart className="w-4 h-4 text-[var(--accent-primary)]" />
                   Bookmarks
                 </Link>
-                <hr className="my-1 border-slate-800" />
+                <hr className="my-1 border-border-subtle" />
                 <Link 
                   to="/my-items" 
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-base font-medium text-slate-300 hover:bg-slate-900 hover:text-slate-100"
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-full text-[var(--text-secondary)] hover:bg-[var(--border-subtle)]"
                 >
-                  <FiLayout className="w-5 h-5 text-amber-400" />
+                  <FiLayout className="w-4 h-4" />
                   My Items
                 </Link>
                 <Link 
                   to="/my-claims" 
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-base font-medium text-slate-300 hover:bg-slate-900 hover:text-slate-100"
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-full text-[var(--text-secondary)] hover:bg-[var(--border-subtle)]"
                 >
-                  <FiFileText className="w-5 h-5 text-indigo-400" />
+                  <FiFileText className="w-4 h-4" />
                   My Claims
                 </Link>
                 <Link 
                   to="/received-claims" 
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-base font-medium text-slate-300 hover:bg-slate-900 hover:text-slate-100"
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-full text-[var(--text-secondary)] hover:bg-[var(--border-subtle)]"
                 >
-                  <FiFileText className="w-5 h-5 text-emerald-400" />
+                  <FiFileText className="w-4 h-4" />
                   Received Claims
                 </Link>
                 <Link 
                   to="/add-lost-item" 
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-base font-medium text-slate-300 hover:bg-slate-900 hover:text-slate-100"
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-full text-[var(--text-secondary)] hover:bg-[var(--border-subtle)]"
                 >
-                  <FiPlusCircle className="w-5 h-5 text-rose-400" />
+                  <FiPlusCircle className="w-4 h-4" />
                   Add Lost Item
                 </Link>
                 <Link 
                   to="/add-found-item" 
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-base font-medium text-slate-300 hover:bg-slate-900 hover:text-slate-100"
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-full text-[var(--text-secondary)] hover:bg-[var(--border-subtle)]"
                 >
-                  <FiPlusCircle className="w-5 h-5 text-emerald-400" />
+                  <FiPlusCircle className="w-4 h-4" />
                   Add Found Item
                 </Link>
 
                 {user.role === 'admin' && (
                   <Link 
                     to="/admin" 
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-base font-semibold text-rose-400 hover:bg-slate-900"
+                    className="flex items-center gap-3 px-4 py-2.5 rounded-full text-rose-500 hover:bg-rose-500/5"
                   >
-                    <FiShield className="w-5 h-5" />
+                    <FiShield className="w-4 h-4" />
                     🛡️ Admin Panel
                   </Link>
                 )}
 
-                <hr className="my-1 border-slate-800" />
+                <hr className="my-1 border-border-subtle" />
                 
-                <div className="px-3 py-3 border border-slate-800 rounded-lg bg-slate-900/50 m-2 flex items-center justify-between">
+                <div className="px-4 py-3 border border-border-subtle rounded-3xl bg-slate-900/10 m-1 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-rose-500 flex items-center justify-center text-white font-bold">
+                    <div className="w-7 h-7 rounded-full border border-border-subtle bg-slate-950/30 flex items-center justify-center text-[var(--accent-primary)] font-bold text-xs">
                       {user.name.charAt(0).toUpperCase()}
                     </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold truncate text-slate-200">{user.name}</p>
-                      <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                    <div className="text-left font-mono">
+                      <p className="text-[10px] font-bold truncate text-[var(--text-primary)]">{user.name}</p>
+                      <p className="text-[9px] text-[var(--text-secondary)] truncate mt-0.5">{user.email}</p>
                     </div>
                   </div>
                   <button 
                     onClick={handleLogout} 
-                    className="p-2 text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
+                    className="p-2 text-rose-500 hover:bg-rose-500/5 rounded-full transition-colors cursor-pointer"
                     title="Logout"
                   >
-                    <FiLogOut className="w-5 h-5" />
+                    <FiLogOut className="w-4 h-4" />
                   </button>
                 </div>
               </>
             ) : (
-              <div className="grid grid-cols-2 gap-2 px-3 py-3">
+              <div className="grid grid-cols-2 gap-2 px-3 py-2">
                 <Link 
                   to="/login" 
-                  className="flex items-center justify-center px-4 py-2.5 text-base font-medium text-slate-300 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-lg transition-colors"
+                  className="flex items-center justify-center px-4 py-2 text-[10px] font-bold font-mono text-[var(--text-secondary)] bg-slate-900/10 border border-border-subtle rounded-full hover:text-[var(--text-primary)] transition-colors"
                 >
                   Login
                 </Link>
                 <Link 
                   to="/register" 
-                  className="flex items-center justify-center px-4 py-2.5 text-base font-medium text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-colors shadow shadow-indigo-500/10"
+                  className="flex items-center justify-center px-4 py-2 text-[10px] font-bold font-mono text-slate-950 bg-[#F59E0B] rounded-full transition-colors"
                 >
                   Register
                 </Link>

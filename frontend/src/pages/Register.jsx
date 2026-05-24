@@ -57,7 +57,7 @@ const Register = () => {
     setIsLoading(true);
     try {
       const response = await API.post('/auth/register', { name, email, password });
-      
+
       if (response.data) {
         localStorage.setItem('token', response.data.token);
         setUser(response.data);
@@ -72,18 +72,17 @@ const Register = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[80vh] px-4 py-8">
+    <div className="flex items-center justify-center min-h-[80vh] px-4 py-8 relative">
       {/* Background decoration blobs */}
-      <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl -z-10 animate-pulse"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-rose-500/10 rounded-full blur-3xl -z-10 animate-pulse delay-700"></div>
+      <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-[var(--glow-color)] rounded-full blur-3xl -z-10 animate-pulse"></div>
 
-      <Card className="w-full max-w-md border border-slate-800 shadow-2xl p-8 bg-slate-900/60 backdrop-blur-xl">
+      <Card className="w-full max-w-md border border-border-subtle shadow-2xl p-8 rounded-3xl">
         <div className="text-center mb-8">
-          <div className="inline-flex w-12 h-12 rounded-2xl bg-gradient-to-tr from-rose-500 to-indigo-600 items-center justify-center text-white font-bold text-xl mb-4 shadow shadow-indigo-500/20">
+          <div className="inline-flex w-12 h-12 rounded-2xl bg-slate-950/20 border border-[var(--accent-primary)]/35 text-[var(--accent-primary)] items-center justify-center font-bold text-xl mb-4 shadow-[0_4px_16px_var(--glow-color)]">
             F
           </div>
-          <h2 className="text-3xl font-extrabold tracking-tight text-white mb-2">Create Account</h2>
-          <p className="text-sm text-slate-400">Join us to locate lost items and submit claim reports</p>
+          <h2 className="text-2xl font-extrabold tracking-tight text-[var(--text-primary)] mb-2 uppercase">Create Account</h2>
+          <p className="text-xs text-[var(--text-secondary)] uppercase tracking-wider font-mono">Join us to locate lost items and submit claim reports</p>
         </div>
 
         <form onSubmit={onSubmit} className="space-y-5">
@@ -91,7 +90,7 @@ const Register = () => {
             label="Full Name"
             type="text"
             name="name"
-            placeholder="John Doe"
+            placeholder="Your Name"
             value={name}
             onChange={onChange}
             required
@@ -131,22 +130,22 @@ const Register = () => {
             autoComplete="new-password"
           />
 
-          <Button 
-            type="submit" 
-            variant="primary" 
-            className="w-full justify-center" 
+          <Button
+            type="submit"
+            variant="primary"
+            className="w-full justify-center"
             disabled={isLoading}
           >
             {isLoading ? 'Creating Account...' : 'Register'}
           </Button>
         </form>
 
-        <div className="mt-8 text-center border-t border-slate-800/80 pt-6">
-          <p className="text-sm text-slate-400">
+        <div className="mt-8 text-center border-t border-border-subtle pt-6 font-mono">
+          <p className="text-xs text-[var(--text-secondary)]">
             Already have an account?{' '}
-            <Link 
-              to="/login" 
-              className="font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
+            <Link
+              to="/login"
+              className="font-bold text-[var(--accent-primary)] hover:underline uppercase tracking-wider"
             >
               Sign in here
             </Link>

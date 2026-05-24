@@ -11,8 +11,8 @@ const Card = ({
   return (
     <div
       onClick={onClick}
-      className={`bg-gray-900/40 backdrop-blur-xl border border-white/5 rounded-2xl p-6 shadow-xl transition-all duration-300 ${
-        isClickable ? 'cursor-pointer hover:border-white/10 hover:bg-gray-900/60 hover:shadow-2xl hover:translate-y-[-2px]' : ''
+      className={`glass-panel rounded-3xl p-6 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        isClickable ? 'cursor-pointer hover:scale-[1.01] hover:shadow-2xl' : ''
       } ${className}`}
       {...props}
     >

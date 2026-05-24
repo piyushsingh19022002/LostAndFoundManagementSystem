@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../services/api';
 import Loader from '../components/Loader';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import Badge from '../components/ui/Badge';
+import { FiMapPin, FiCalendar, FiMessageSquare, FiAlertTriangle, FiInbox, FiSearch, FiGift } from 'react-icons/fi';
 
 const MyClaims = () => {
   const [claims, setClaims] = useState([]);
@@ -26,437 +30,172 @@ const MyClaims = () => {
     fetchClaims();
   }, []);
 
-  const getStatusStyles = (status) => {
+  const getStatusVariant = (status) => {
     switch (status) {
       case 'approved':
-        return {
-          color: '#34d399',
-          bg: 'rgba(16, 185, 129, 0.12)',
-          border: 'rgba(16, 185, 129, 0.3)',
-          label: 'Approved ✅',
-        };
+        return 'success';
       case 'rejected':
-        return {
-          color: '#f87171',
-          bg: 'rgba(239, 68, 68, 0.12)',
-          border: 'rgba(239, 68, 68, 0.3)',
-          label: 'Rejected ❌',
-        };
+        return 'error';
       case 'pending':
       default:
-        return {
-          color: '#fbbf24',
-          bg: 'rgba(245, 158, 11, 0.12)',
-          border: 'rgba(245, 158, 11, 0.3)',
-          label: 'Pending ⏳',
-        };
+        return 'warning';
+    }
+  };
+
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case 'approved':
+        return 'Approved ✓';
+      case 'rejected':
+        return 'Rejected ✗';
+      case 'pending':
+      default:
+        return 'Pending ⏳';
     }
   };
 
   if (loading) {
     return (
-      <div style={styles.loaderContainer}>
-        <Loader size="50px" color="#61dafb" />
-        <p style={styles.loaderText}>Loading your claims...</p>
+      <div className="flex flex-col items-center justify-center min-h-[70vh] gap-4">
+        <Loader size="50px" color="var(--accent-primary)" />
+        <p className="text-xs font-mono text-[var(--text-secondary)] uppercase tracking-widest animate-pulse">// Loading your claims...</p>
       </div>
     );
   }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.wrapper}>
-        <div style={styles.header}>
-          <h1 style={styles.titleText}>My Claim Requests</h1>
-          <p style={styles.subtitleText}>
-            Track and monitor the status of items you've claimed or reported finding.
-          </p>
+    <div className="min-h-[85vh] py-12 px-4 max-w-5xl mx-auto w-full">
+      <div className="text-center mb-12">
+        <h1 className="text-3xl font-extrabold tracking-tight text-[var(--text-primary)] mb-3 uppercase">My Claim Requests</h1>
+        <p className="text-xs text-[var(--text-secondary)] uppercase tracking-wider font-mono">// Track and monitor the status of items you've claimed</p>
+      </div>
+
+      {error && (
+        <div className="flex items-center gap-3 bg-rose-500/10 border border-rose-500/30 text-rose-500 rounded-2xl p-4 mb-8 font-mono text-sm">
+          <FiAlertTriangle className="text-lg flex-shrink-0" />
+          <span>{error}</span>
         </div>
+      )}
 
-        {error && (
-          <div style={styles.errorAlert}>
-            <span style={styles.alertIcon}>⚠️</span>
-            <span style={styles.alertText}>{error}</span>
+      {!error && claims.length === 0 ? (
+        <Card className="flex flex-col items-center text-center p-12 max-w-xl mx-auto border border-dashed border-border-subtle">
+          <div className="w-16 h-16 rounded-full bg-slate-950/20 border border-[var(--accent-primary)]/30 flex items-center justify-center text-2xl text-[var(--accent-primary)] mb-6">
+            <FiInbox />
           </div>
-        )}
-
-        {!error && claims.length === 0 ? (
-          <div style={styles.nullCard}>
-            <span style={styles.nullIcon}>🤝</span>
-            <h3 style={styles.nullTitle}>No Claims Submitted Yet</h3>
-            <p style={styles.nullMessage}>
-              You haven't submitted any claim requests. If you see an item that belongs to you or you've found an item matching a report, you can claim it from the details page.
-            </p>
-            <div style={styles.nullActions}>
-              <Link to="/lost-items" style={styles.primaryLinkBtn}>
-                Browse Lost Items
-              </Link>
-              <Link to="/found-items" style={styles.secondaryLinkBtn}>
-                Browse Found Items
-              </Link>
-            </div>
+          <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2 uppercase">No Claims Submitted Yet</h3>
+          <p className="text-sm text-[var(--text-secondary)] mb-8 max-w-sm">
+            You haven't submitted any claim requests. If you see an item that belongs to you or you've found an item matching a report, you can claim it from the details page.
+          </p>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Link to="/lost-items">
+              <Button variant="primary">Browse Lost Items</Button>
+            </Link>
+            <Link to="/found-items">
+              <Button variant="secondary">Browse Found Items</Button>
+            </Link>
           </div>
-        ) : (
-          <div style={styles.grid}>
-            {claims.map((claim) => {
-              const itemData = claim.item || {};
-              const ownerData = claim.owner || {};
-              const ss = getStatusStyles(claim.status);
-              const isLost = itemData.category === 'Lost' || claim.itemModel === 'Item';
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 gap-6">
+          {claims.map((claim) => {
+            const itemData = claim.item || {};
+            const ownerData = claim.owner || {};
+            const isLost = itemData.category === 'Lost' || claim.itemModel === 'Item';
 
-              return (
-                <div key={claim._id} style={styles.claimCard}>
-                  {/* Status Badge */}
-                  <span
-                    style={{
-                      ...styles.statusBadge,
-                      backgroundColor: ss.bg,
-                      color: ss.color,
-                      border: `1px solid ${ss.border}`,
-                    }}
-                  >
-                    {ss.label}
-                  </span>
+            return (
+              <Card key={claim._id} className="relative flex flex-col md:flex-row gap-6 p-6 border border-border-subtle">
+                {/* Thumbnail or placeholder */}
+                <div className="w-full md:w-36 h-36 rounded-2xl bg-slate-950/20 border border-border-subtle overflow-hidden flex-shrink-0 flex items-center justify-center relative">
+                  {itemData.imageUrl ? (
+                    <img
+                      src={itemData.imageUrl}
+                      alt={itemData.title || 'Claimed Item'}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-3xl text-[var(--accent-primary)]">
+                      {isLost ? <FiSearch /> : <FiGift />}
+                    </span>
+                  )}
+                </div>
 
-                  <div style={styles.cardContent}>
-                    {/* Item Thumbnail */}
-                    <div style={styles.thumbWrapper}>
-                      {itemData.imageUrl ? (
-                        <img
-                          src={itemData.imageUrl}
-                          alt={itemData.title || 'Claimed Item'}
-                          style={styles.thumbnail}
-                        />
-                      ) : (
-                        <div style={styles.thumbPlaceholder}>
-                          <span>{isLost ? '🔍' : '🎁'}</span>
-                        </div>
-                      )}
+                <div className="flex-1 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+                      <Badge variant={isLost ? 'error' : 'success'}>
+                        {isLost ? 'Lost Item' : 'Found Item'}
+                      </Badge>
+                      <Badge variant={getStatusVariant(claim.status)}>
+                        {getStatusLabel(claim.status)}
+                      </Badge>
+                    </div>
+                    
+                    <h3 className="text-xl font-bold text-[var(--text-primary)] uppercase tracking-tight mb-2">
+                      {itemData.title || 'Deleted Item'}
+                    </h3>
+                    
+                    <div className="flex flex-wrap gap-4 text-xs font-mono text-[var(--text-secondary)] uppercase tracking-wider mb-4">
+                      <div className="flex items-center gap-1.5">
+                        <FiMapPin className="text-[var(--accent-primary)]" />
+                        <span>{itemData.location || 'Unknown'}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <FiCalendar className="text-[var(--accent-primary)]" />
+                        <span>Submitted: {new Date(claim.createdAt).toLocaleDateString()}</span>
+                      </div>
                     </div>
 
-                    {/* Meta details */}
-                    <div style={styles.details}>
-                      <span
-                        style={{
-                          ...styles.categoryBadge,
-                          backgroundColor: isLost
-                            ? 'rgba(239, 68, 68, 0.15)'
-                            : 'rgba(16, 185, 129, 0.15)',
-                          color: isLost ? '#f87171' : '#34d399',
-                          border: `1px solid ${
-                            isLost ? 'rgba(239, 68, 68, 0.3)' : 'rgba(16, 185, 129, 0.3)'
-                          }`,
-                        }}
-                      >
-                        {isLost ? 'Lost Item' : 'Found Item'}
+                    <div className="bg-slate-950/20 border border-border-subtle rounded-2xl p-4 mb-4">
+                      <span className="text-[10px] font-bold font-mono uppercase tracking-widest text-[var(--text-secondary)] block mb-1">
+                        // Your Submitted Message
                       </span>
-
-                      <h3 style={styles.itemTitle}>
-                        {itemData.title || 'Deleted Item'}
-                      </h3>
-                      <p style={styles.itemMeta}>📍 {itemData.location || 'Unknown location'}</p>
-                      <p style={styles.itemMeta}>
-                        📅 Submitted: {new Date(claim.createdAt).toLocaleDateString()}
+                      <p className="text-sm italic text-[var(--text-primary)]">
+                        "{claim.message}"
                       </p>
+                    </div>
 
-                      <div style={styles.messageBox}>
-                        <h4 style={styles.boxTitle}>Your Submitted Message:</h4>
-                        <p style={styles.boxMessage}>"{claim.message}"</p>
-                      </div>
-
-                      {/* Display Owner / Reporter Info if Approved */}
-                      {claim.status === 'approved' && (
-                        <div style={styles.contactCard}>
-                          <h4 style={styles.contactTitle}>✅ Reporter Contact Details</h4>
-                          <p style={styles.contactField}>
-                            <strong>Name:</strong> {ownerData.name || 'N/A'}
+                    {/* Display Owner / Reporter Info if Approved */}
+                    {claim.status === 'approved' && (
+                      <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 mb-4">
+                        <span className="text-[10px] font-bold font-mono uppercase tracking-widest text-emerald-400 block mb-2">
+                          // Reporter Contact Details
+                        </span>
+                        <div className="space-y-1.5 text-sm">
+                          <p className="text-[var(--text-primary)]">
+                            <strong className="text-xs uppercase font-mono tracking-wider text-[var(--text-secondary)] mr-2">Name:</strong>
+                            {ownerData.name || 'N/A'}
                           </p>
                           {ownerData.email && (
-                            <p style={styles.contactField}>
-                              <strong>Email:</strong>{' '}
-                              <a href={`mailto:${ownerData.email}`} style={styles.emailLink}>
+                            <p className="text-[var(--text-primary)]">
+                              <strong className="text-xs uppercase font-mono tracking-wider text-[var(--text-secondary)] mr-2">Email:</strong>
+                              <a href={`mailto:${ownerData.email}`} className="text-[var(--accent-primary)] hover:underline font-semibold">
                                 {ownerData.email}
                               </a>
                             </p>
                           )}
                         </div>
-                      )}
-
-                      {claim.status !== 'rejected' && (
-                        <div style={styles.chatActionWrapper}>
-                          <Link to={`/chat/${claim._id}`} style={styles.chatBtn}>
-                            💬 Open Chat
-                          </Link>
-                        </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
+
+                  {claim.status !== 'rejected' && (
+                    <div className="mt-2 flex">
+                      <Link to={`/chat/${claim._id}`}>
+                        <Button variant="secondary" size="sm" className="flex items-center gap-2">
+                          <FiMessageSquare className="text-xs" />
+                          Open Chat
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
-};
-
-const styles = {
-  container: {
-    minHeight: '85vh',
-    background: 'radial-gradient(circle at center, #1f2937 0%, #111827 100%)',
-    fontFamily: "'Outfit', 'Inter', sans-serif",
-    padding: '40px 20px',
-    display: 'flex',
-    justifyContent: 'center',
-  },
-  wrapper: {
-    maxWidth: '900px',
-    width: '100%',
-  },
-  header: {
-    marginBottom: '40px',
-    textAlign: 'center',
-  },
-  titleText: {
-    fontSize: '2.25rem',
-    fontWeight: '800',
-    color: '#ffffff',
-    margin: '0 0 12px 0',
-    letterSpacing: '-0.02em',
-  },
-  subtitleText: {
-    fontSize: '1rem',
-    color: '#9ca3af',
-    margin: 0,
-  },
-  errorAlert: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
-    border: '1px solid rgba(239, 68, 68, 0.3)',
-    borderRadius: '8px',
-    padding: '12px 16px',
-    marginBottom: '24px',
-  },
-  alertIcon: {
-    fontSize: '1.2rem',
-  },
-  alertText: {
-    fontSize: '0.95rem',
-    color: '#f3f4f6',
-    fontWeight: '500',
-  },
-  nullCard: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    textAlign: 'center',
-    backgroundColor: 'rgba(31, 41, 55, 0.45)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    borderRadius: '16px',
-    padding: '60px 40px',
-    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
-  },
-  nullIcon: {
-    fontSize: '4rem',
-    marginBottom: '20px',
-  },
-  nullTitle: {
-    fontSize: '1.5rem',
-    fontWeight: '700',
-    color: '#ffffff',
-    margin: '0 0 12px 0',
-  },
-  nullMessage: {
-    fontSize: '1rem',
-    color: '#9ca3af',
-    maxWidth: '500px',
-    lineHeight: '1.6',
-    margin: '0 0 32px 0',
-  },
-  nullActions: {
-    display: 'flex',
-    gap: '16px',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-  },
-  primaryLinkBtn: {
-    padding: '12px 24px',
-    backgroundColor: '#61dafb',
-    color: '#0f172a',
-    borderRadius: '8px',
-    fontWeight: '700',
-    textDecoration: 'none',
-    fontSize: '0.95rem',
-    boxShadow: '0 4px 12px rgba(97, 218, 251, 0.2)',
-  },
-  secondaryLinkBtn: {
-    padding: '12px 24px',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    color: '#ffffff',
-    borderRadius: '8px',
-    fontWeight: '700',
-    textDecoration: 'none',
-    fontSize: '0.95rem',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-  },
-  grid: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '24px',
-  },
-  claimCard: {
-    position: 'relative',
-    backgroundColor: 'rgba(31, 41, 55, 0.55)',
-    backdropFilter: 'blur(12px)',
-    WebkitBackdropFilter: 'blur(12px)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    borderRadius: '16px',
-    padding: '30px',
-    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)',
-  },
-  statusBadge: {
-    position: 'absolute',
-    top: '30px',
-    right: '30px',
-    padding: '6px 14px',
-    borderRadius: '20px',
-    fontSize: '0.8rem',
-    fontWeight: '700',
-  },
-  cardContent: {
-    display: 'flex',
-    gap: '24px',
-    flexWrap: 'wrap',
-  },
-  thumbWrapper: {
-    width: '120px',
-    height: '120px',
-    flexShrink: 0,
-    backgroundColor: 'rgba(17, 24, 39, 0.4)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    borderRadius: '12px',
-    overflow: 'hidden',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  thumbnail: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-  },
-  thumbPlaceholder: {
-    fontSize: '3rem',
-  },
-  details: {
-    flex: 1,
-    minWidth: '280px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    gap: '8px',
-  },
-  categoryBadge: {
-    padding: '4px 10px',
-    borderRadius: '12px',
-    fontSize: '0.7rem',
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-  },
-  itemTitle: {
-    fontSize: '1.5rem',
-    fontWeight: '700',
-    color: '#ffffff',
-    margin: '4px 0 0 0',
-  },
-  itemMeta: {
-    fontSize: '0.9rem',
-    color: '#9ca3af',
-    margin: 0,
-  },
-  messageBox: {
-    width: '100%',
-    backgroundColor: 'rgba(17, 24, 39, 0.35)',
-    border: '1px solid rgba(255, 255, 255, 0.04)',
-    borderRadius: '8px',
-    padding: '14px',
-    marginTop: '12px',
-  },
-  boxTitle: {
-    fontSize: '0.8rem',
-    fontWeight: '700',
-    color: '#9ca3af',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    margin: '0 0 6px 0',
-  },
-  boxMessage: {
-    fontSize: '0.95rem',
-    color: '#e5e7eb',
-    fontStyle: 'italic',
-    lineHeight: '1.4',
-    margin: 0,
-  },
-  contactCard: {
-    width: '100%',
-    backgroundColor: 'rgba(16, 185, 129, 0.08)',
-    border: '1px solid rgba(16, 185, 129, 0.2)',
-    borderRadius: '8px',
-    padding: '16px',
-    marginTop: '16px',
-  },
-  contactTitle: {
-    fontSize: '0.9rem',
-    fontWeight: '700',
-    color: '#34d399',
-    margin: '0 0 8px 0',
-  },
-  contactField: {
-    fontSize: '0.9rem',
-    color: '#e5e7eb',
-    margin: '4px 0',
-  },
-  emailLink: {
-    color: '#34d399',
-    textDecoration: 'none',
-    fontWeight: '600',
-  },
-  loaderContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '85vh',
-    background: 'radial-gradient(circle at center, #1f2937 0%, #111827 100%)',
-  },
-  loaderText: {
-    marginTop: '16px',
-    color: '#9ca3af',
-    fontSize: '0.95rem',
-    fontWeight: '500',
-  },
-  chatActionWrapper: {
-    marginTop: '16px',
-    width: '100%',
-  },
-  chatBtn: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '10px 20px',
-    backgroundColor: 'rgba(97, 218, 251, 0.15)',
-    color: '#61dafb',
-    border: '1px solid rgba(97, 218, 251, 0.3)',
-    borderRadius: '8px',
-    fontWeight: '700',
-    textDecoration: 'none',
-    fontSize: '0.9rem',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
 };
 
 export default MyClaims;

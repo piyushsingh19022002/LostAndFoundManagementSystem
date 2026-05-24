@@ -6,6 +6,8 @@ import DashboardCard from '../components/DashboardCard';
 import RecentActivity from '../components/RecentActivity';
 import ProfileSection from '../components/ProfileSection';
 import AnalyticsSkeleton from '../components/ui/AnalyticsSkeleton';
+import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
 
 const Dashboard = () => {
   const { user } = useContext(AuthContext);
@@ -82,12 +84,12 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div style={styles.dashboardWrapper}>
-        <div style={styles.container}>
-          <div style={styles.header}>
+      <div className="relative min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] px-4 py-16 overflow-hidden font-sans transition-colors duration-300">
+        <div className="max-w-7xl mx-auto relative z-10 flex flex-col gap-10">
+          <div className="flex flex-wrap items-center justify-between gap-6">
             <div>
-              <h1 style={styles.welcomeText}>Workspace Dashboard</h1>
-              <p style={styles.subtext}>Assembling your personalized workspace...</p>
+              <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">Workspace Dashboard</h1>
+              <p className="text-[10px] text-[var(--text-secondary)] font-mono uppercase tracking-widest mt-1.5">// Assembling your personalized workspace...</p>
             </div>
           </div>
           <div className="mt-8">
@@ -99,62 +101,75 @@ const Dashboard = () => {
   }
 
   return (
-    <div style={styles.dashboardWrapper}>
-      {/* Background decoration */}
-      <div style={styles.bgBlob}></div>
-      <div style={styles.bgBlob2}></div>
-
+    <div className="relative min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] px-4 py-16 overflow-hidden font-sans transition-colors duration-300">
       {/* Main Container */}
-      <div style={styles.container}>
+      <div className="max-w-7xl mx-auto relative z-10 flex flex-col gap-10">
         {/* Header */}
-        <div style={styles.header}>
+        <div className="flex flex-wrap items-center justify-between gap-6">
           <div>
-            <h1 style={styles.welcomeText}>Workspace Dashboard</h1>
-            <p style={styles.subtext}>Manage your reported lost and found items in one place.</p>
+            <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">Workspace Dashboard</h1>
+            <p className="text-[10px] text-[var(--text-secondary)] font-mono uppercase tracking-widest mt-1.5">
+              // Manage your reported lost and found items in one place.
+            </p>
           </div>
-          <div style={styles.actionHeaderGroup}>
-            <Link to="/add-lost-item" style={styles.btnPrimary}>➕ Report Lost Item</Link>
-            <Link to="/add-found-item" style={styles.btnSecondary}>🔍 Report Found Item</Link>
+          <div className="flex gap-3">
+            <Link to="/add-lost-item" className="no-underline">
+              <Button variant="primary" size="sm">Report Lost Item</Button>
+            </Link>
+            <Link to="/add-found-item" className="no-underline">
+              <Button variant="secondary" size="sm">Report Found Item</Button>
+            </Link>
           </div>
         </div>
 
         {/* Global Error Banner */}
         {error && (
-          <div style={styles.errorBanner}>
+          <div className="flex justify-between items-center bg-amber-500/5 border border-amber-500/25 text-amber-500 p-4 rounded-xl text-xs font-mono">
             <span>⚠️ {error}</span>
-            <button onClick={fetchDashboardData} style={styles.retryBtn}>Retry</button>
+            <button onClick={fetchDashboardData} className="bg-amber-500 text-stone-950 border-none px-3 py-1.5 rounded-lg cursor-pointer font-bold">Retry</button>
           </div>
         )}
 
         {/* Action Feedbacks */}
         {actionMessage.text && (
-          <div style={{
-            ...styles.toast,
-            backgroundColor: actionMessage.type === 'success' ? 'rgba(52, 211, 153, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-            borderColor: actionMessage.type === 'success' ? '#34d399' : '#ef4444',
-            color: actionMessage.type === 'success' ? '#34d399' : '#ef4444',
-          }}>
+          <div className={`border p-4 rounded-xl text-xs font-mono ${
+            actionMessage.type === 'success' 
+              ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' 
+              : 'bg-rose-500/10 border-rose-500/20 text-rose-500'
+          }`}>
             {actionMessage.text}
           </div>
         )}
 
         {/* Tab Selection */}
-        <div style={styles.tabBar}>
+        <div className="flex gap-2 p-1.5 bg-slate-950/20 border border-border-subtle rounded-full w-fit max-w-full overflow-x-auto scrollbar-none">
           <button 
             onClick={() => setActiveTab('overview')} 
-            style={{ ...styles.tabButton, ...(activeTab === 'overview' ? styles.tabButtonActive : {}) }}
+            className={`px-5 py-2.5 rounded-full font-mono text-[10px] uppercase tracking-wider transition-all duration-300 cursor-pointer ${
+              activeTab === 'overview'
+                ? 'bg-[var(--text-primary)] text-[var(--bg-primary)] font-bold shadow-md'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+            }`}
           >
             Overview
           </button>
           <button 
             onClick={() => setActiveTab('lost')} 
-            style={{ ...styles.tabButton, ...(activeTab === 'lost' ? styles.tabButtonActive : {}) }}
+            className={`px-5 py-2.5 rounded-full font-mono text-[10px] uppercase tracking-wider transition-all duration-300 cursor-pointer ${
+              activeTab === 'lost'
+                ? 'bg-[var(--text-primary)] text-[var(--bg-primary)] font-bold shadow-md'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+            }`}
           >
             My Lost Reports ({myLostItems.length})
           </button>
           <button 
             onClick={() => setActiveTab('found')} 
-            style={{ ...styles.tabButton, ...(activeTab === 'found' ? styles.tabButtonActive : {}) }}
+            className={`px-5 py-2.5 rounded-full font-mono text-[10px] uppercase tracking-wider transition-all duration-300 cursor-pointer ${
+              activeTab === 'found'
+                ? 'bg-[var(--text-primary)] text-[var(--bg-primary)] font-bold shadow-md'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+            }`}
           >
             My Found Reports ({myFoundItems.length})
           </button>
@@ -162,93 +177,100 @@ const Dashboard = () => {
 
         {/* Content Tabs */}
         {activeTab === 'overview' && (
-          <div style={styles.tabContent}>
+          <div className="flex flex-col gap-8">
             {/* Statistics Cards */}
-            <div style={styles.statsGrid}>
+            <div className="flex flex-wrap gap-5">
               <DashboardCard 
                 title="Lost Items Reported" 
                 value={stats?.totalLostItems || 0} 
                 icon="🎒" 
                 description="Items you are looking for"
-                accentColor="#61dafb"
+                accentColor="var(--accent-primary)"
               />
               <DashboardCard 
                 title="Found Items Reported" 
                 value={stats?.totalFoundItems || 0} 
                 icon="🔑" 
                 description="Items you recovered or found"
-                accentColor="#34d399"
+                accentColor="var(--accent-primary)"
               />
               <DashboardCard 
                 title="Total Submissions" 
                 value={(stats?.totalLostItems || 0) + (stats?.totalFoundItems || 0)} 
                 icon="📊" 
                 description="Overall platform contributions"
-                accentColor="#a78bfa"
+                accentColor="var(--accent-primary)"
               />
             </div>
 
             {/* Layout Grid */}
-            <div style={styles.layoutGrid}>
-              <div style={styles.mainCol}>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 flex flex-col gap-8">
                 <RecentActivity 
                   lostItems={stats?.recentLostItems || []} 
                   foundItems={stats?.recentFoundItems || []} 
                 />
               </div>
-              <div style={styles.sideCol}>
+              <div className="flex flex-col gap-8">
                 <ProfileSection user={user} />
-                <div style={styles.quickNavigationBox}>
-                  <h4 style={styles.boxTitle}>Quick Navigation</h4>
-                  <div style={styles.navigationLinks}>
-                    <Link to="/lost-items" style={styles.navLinkItem}>🌐 Public Lost Feed</Link>
-                    <Link to="/found-items" style={styles.navLinkItem}>🌐 Public Found Feed</Link>
+                <Card className="p-6">
+                  <h4 className="text-xs font-bold text-[var(--text-primary)] uppercase tracking-wider mb-4 font-mono">// Quick Navigation</h4>
+                  <div className="flex flex-col gap-3 font-mono">
+                    <Link to="/lost-items" className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-border-subtle hover:border-[var(--accent-primary)]/50 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-slate-900/10 transition-all duration-300 text-[10px] uppercase tracking-wider no-underline">
+                      🌐 Public Lost Feed
+                    </Link>
+                    <Link to="/found-items" className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-border-subtle hover:border-[var(--accent-primary)]/50 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-slate-900/10 transition-all duration-300 text-[10px] uppercase tracking-wider no-underline">
+                      🌐 Public Found Feed
+                    </Link>
                   </div>
-                </div>
+                </Card>
               </div>
             </div>
           </div>
         )}
 
         {activeTab === 'lost' && (
-          <div style={styles.tabContent}>
-            <div style={styles.reportsList}>
+          <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-4">
               {myLostItems.length === 0 ? (
-                <div style={styles.emptyTabState}>
-                  <h3>No Lost Reports Yet</h3>
-                  <p style={{ color: '#9ca3af', marginBottom: '16px' }}>Have you misplaced an item? Report it so others can assist in locating it.</p>
-                  <Link to="/add-lost-item" style={styles.btnPrimary}>Report Lost Item</Link>
+                <div className="flex flex-col items-center text-center py-20 px-6 bg-[var(--bg-card)] border border-dashed border-border-subtle rounded-3xl">
+                  <span className="text-4xl mb-4">🎒</span>
+                  <h3 className="text-lg font-bold mb-2">No Lost Reports Yet</h3>
+                  <p className="text-xs text-[var(--text-secondary)] mb-6 max-w-sm">Have you misplaced an item? Report it so others can assist in locating it.</p>
+                  <Link to="/add-lost-item" className="no-underline">
+                    <Button variant="primary">Report Lost Item</Button>
+                  </Link>
                 </div>
               ) : (
                 myLostItems.map(item => (
-                  <div key={item._id} style={styles.reportRow}>
-                    <div style={styles.reportRowLeft}>
+                  <div key={item._id} className="flex flex-wrap items-center justify-between p-5 bg-[var(--bg-card)] border border-border-subtle rounded-2xl gap-5 transition-all duration-300">
+                    <div className="flex items-center gap-4 min-w-[280px]">
                       {item.imageUrl ? (
-                        <img src={item.imageUrl} alt={item.title} style={styles.reportThumb} />
+                        <img src={item.imageUrl} alt={item.title} className="w-14 h-14 rounded-xl object-cover" />
                       ) : (
-                        <div style={{ ...styles.reportThumbPlaceholder, backgroundColor: 'rgba(97, 218, 251, 0.1)' }}>🎒</div>
+                        <div className="w-14 h-14 rounded-xl flex items-center justify-center text-xl bg-slate-950/20 border border-border-subtle">🎒</div>
                       )}
                       <div>
-                        <h4 style={styles.reportRowTitle}>{item.title}</h4>
-                        <p style={styles.reportRowDesc}>{item.description.slice(0, 100)}{item.description.length > 100 ? '...' : ''}</p>
-                        <div style={styles.reportMeta}>
+                        <h4 className="text-sm font-bold text-[var(--text-primary)] mb-1">{item.title}</h4>
+                        <p className="text-xs text-[var(--text-secondary)] mb-2 leading-relaxed max-w-md">{item.description.slice(0, 100)}{item.description.length > 100 ? '...' : ''}</p>
+                        <div className="flex flex-wrap items-center gap-2 text-[9px] font-mono text-[var(--text-secondary)] uppercase tracking-wider">
                           <span>📍 {item.location}</span>
                           <span>•</span>
                           <span>📅 {new Date(item.date).toLocaleDateString()}</span>
                           <span>•</span>
-                          <span style={{ 
-                            ...styles.statusBadge, 
-                            backgroundColor: item.status === 'lost' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(52, 211, 153, 0.15)',
-                            color: item.status === 'lost' ? '#f87171' : '#34d399'
-                          }}>
+                          <span className={`px-2 py-0.5 rounded text-[8px] font-bold font-mono ${
+                            item.status === 'lost' ? 'bg-rose-500/10 text-rose-500 border border-rose-500/15' : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/15'
+                          }`}>
                             {item.status.toUpperCase()}
                           </span>
                         </div>
                       </div>
                     </div>
-                    <div style={styles.reportRowActions}>
-                      <Link to={`/lost-items/${item._id}`} style={styles.actionBtnView}>View</Link>
-                      <button onClick={() => handleDeleteLostItem(item._id)} style={styles.actionBtnDelete}>Delete</button>
+                    <div className="flex gap-2 font-mono">
+                      <Link to={`/lost-items/${item._id}`}>
+                        <Button variant="outline" size="sm">View</Button>
+                      </Link>
+                      <Button variant="danger" size="sm" onClick={() => handleDeleteLostItem(item._id)}>Delete</Button>
                     </div>
                   </div>
                 ))
@@ -258,44 +280,47 @@ const Dashboard = () => {
         )}
 
         {activeTab === 'found' && (
-          <div style={styles.tabContent}>
-            <div style={styles.reportsList}>
+          <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-4">
               {myFoundItems.length === 0 ? (
-                <div style={styles.emptyTabState}>
-                  <h3>No Found Reports Yet</h3>
-                  <p style={{ color: '#9ca3af', marginBottom: '16px' }}>Found someone's property? List it here to help reunite it with its owner.</p>
-                  <Link to="/add-found-item" style={styles.btnSecondary}>Report Found Item</Link>
+                <div className="flex flex-col items-center text-center py-20 px-6 bg-[var(--bg-card)] border border-dashed border-border-subtle rounded-3xl">
+                  <span className="text-4xl mb-4">🔑</span>
+                  <h3 className="text-lg font-bold mb-2">No Found Reports Yet</h3>
+                  <p className="text-xs text-[var(--text-secondary)] mb-6 max-w-sm">Found someone's property? List it here to help reunite it with its owner.</p>
+                  <Link to="/add-found-item" className="no-underline">
+                    <Button variant="secondary">Report Found Item</Button>
+                  </Link>
                 </div>
               ) : (
                 myFoundItems.map(item => (
-                  <div key={item._id} style={styles.reportRow}>
-                    <div style={styles.reportRowLeft}>
+                  <div key={item._id} className="flex flex-wrap items-center justify-between p-5 bg-[var(--bg-card)] border border-border-subtle rounded-2xl gap-5 transition-all duration-300">
+                    <div className="flex items-center gap-4 min-w-[280px]">
                       {item.imageUrl ? (
-                        <img src={item.imageUrl} alt={item.title} style={styles.reportThumb} />
+                        <img src={item.imageUrl} alt={item.title} className="w-14 h-14 rounded-xl object-cover" />
                       ) : (
-                        <div style={{ ...styles.reportThumbPlaceholder, backgroundColor: 'rgba(52, 211, 153, 0.1)' }}>🔑</div>
+                        <div className="w-14 h-14 rounded-xl flex items-center justify-center text-xl bg-slate-950/20 border border-border-subtle">🔑</div>
                       )}
                       <div>
-                        <h4 style={styles.reportRowTitle}>{item.title}</h4>
-                        <p style={styles.reportRowDesc}>{item.description.slice(0, 100)}{item.description.length > 100 ? '...' : ''}</p>
-                        <div style={styles.reportMeta}>
+                        <h4 className="text-sm font-bold text-[var(--text-primary)] mb-1">{item.title}</h4>
+                        <p className="text-xs text-[var(--text-secondary)] mb-2 leading-relaxed max-w-md">{item.description.slice(0, 100)}{item.description.length > 100 ? '...' : ''}</p>
+                        <div className="flex flex-wrap items-center gap-2 text-[9px] font-mono text-[var(--text-secondary)] uppercase tracking-wider">
                           <span>📍 {item.location}</span>
                           <span>•</span>
                           <span>📅 {new Date(item.dateFound).toLocaleDateString()}</span>
                           <span>•</span>
-                          <span style={{ 
-                            ...styles.statusBadge, 
-                            backgroundColor: item.status === 'found' ? 'rgba(52, 211, 153, 0.15)' : 'rgba(167, 139, 250, 0.15)',
-                            color: item.status === 'found' ? '#34d399' : '#a78bfa'
-                          }}>
+                          <span className={`px-2 py-0.5 rounded text-[8px] font-bold font-mono ${
+                            item.status === 'found' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/15' : 'bg-purple-500/10 text-purple-400 border border-purple-500/15'
+                          }`}>
                             {item.status.toUpperCase()}
                           </span>
                         </div>
                       </div>
                     </div>
-                    <div style={styles.reportRowActions}>
-                      <Link to={`/found-items/${item._id}`} style={styles.actionBtnView}>View</Link>
-                      <button onClick={() => handleDeleteFoundItem(item._id)} style={styles.actionBtnDelete}>Delete</button>
+                    <div className="flex gap-2 font-mono">
+                      <Link to={`/found-items/${item._id}`}>
+                        <Button variant="outline" size="sm">View</Button>
+                      </Link>
+                      <Button variant="danger" size="sm" onClick={() => handleDeleteFoundItem(item._id)}>Delete</Button>
                     </div>
                   </div>
                 ))
@@ -306,322 +331,6 @@ const Dashboard = () => {
       </div>
     </div>
   );
-};
-
-const styles = {
-  dashboardWrapper: {
-    position: 'relative',
-    minHeight: '100vh',
-    backgroundColor: '#0f172a',
-    color: '#f8fafc',
-    padding: '40px 20px',
-    overflow: 'hidden',
-    fontFamily: "'Outfit', 'Inter', sans-serif",
-  },
-  bgBlob: {
-    position: 'absolute',
-    top: '-10%',
-    left: '-10%',
-    width: '40vw',
-    height: '40vw',
-    borderRadius: '50%',
-    background: 'radial-gradient(circle, rgba(97,218,251,0.08) 0%, rgba(97,218,251,0) 70%)',
-    pointerEvents: 'none',
-  },
-  bgBlob2: {
-    position: 'absolute',
-    bottom: '-10%',
-    right: '-10%',
-    width: '45vw',
-    height: '45vw',
-    borderRadius: '50%',
-    background: 'radial-gradient(circle, rgba(52,211,153,0.06) 0%, rgba(52,211,153,0) 70%)',
-    pointerEvents: 'none',
-  },
-  container: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    position: 'relative',
-    zIndex: 2,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '32px',
-  },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    flexWrap: 'wrap',
-    gap: '20px',
-  },
-  welcomeText: {
-    fontSize: '2rem',
-    fontWeight: '800',
-    background: 'linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    margin: 0,
-  },
-  subtext: {
-    color: '#94a3b8',
-    marginTop: '6px',
-    fontSize: '0.95rem',
-  },
-  actionHeaderGroup: {
-    display: 'flex',
-    gap: '12px',
-  },
-  btnPrimary: {
-    backgroundColor: '#0284c7',
-    color: 'white',
-    padding: '12px 20px',
-    borderRadius: '10px',
-    textDecoration: 'none',
-    fontWeight: '600',
-    fontSize: '0.9rem',
-    border: 'none',
-    boxShadow: '0 4px 15px rgba(2, 132, 199, 0.3)',
-    transition: 'all 0.2s ease',
-    cursor: 'pointer',
-  },
-  btnSecondary: {
-    backgroundColor: 'rgba(52, 211, 153, 0.1)',
-    color: '#34d399',
-    padding: '12px 20px',
-    borderRadius: '10px',
-    textDecoration: 'none',
-    fontWeight: '600',
-    fontSize: '0.9rem',
-    border: '1px solid rgba(52, 211, 153, 0.3)',
-    transition: 'all 0.2s ease',
-    cursor: 'pointer',
-  },
-  errorBanner: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
-    border: '1px solid #ef4444',
-    color: '#f87171',
-    padding: '14px 20px',
-    borderRadius: '12px',
-    fontSize: '0.92rem',
-  },
-  retryBtn: {
-    backgroundColor: '#ef4444',
-    color: 'white',
-    border: 'none',
-    padding: '6px 12px',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontWeight: '600',
-  },
-  toast: {
-    border: '1px solid',
-    padding: '14px 20px',
-    borderRadius: '12px',
-    fontSize: '0.92rem',
-  },
-  tabBar: {
-    display: 'flex',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-    gap: '8px',
-  },
-  tabButton: {
-    backgroundColor: 'transparent',
-    border: 'none',
-    color: '#94a3b8',
-    padding: '12px 18px',
-    fontSize: '0.95rem',
-    fontWeight: '600',
-    cursor: 'pointer',
-    position: 'relative',
-    bottom: '-1px',
-    borderBottom: '2px solid transparent',
-    transition: 'all 0.2s ease',
-  },
-  tabButtonActive: {
-    color: '#61dafb',
-    borderBottom: '2px solid #61dafb',
-  },
-  tabContent: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '32px',
-  },
-  statsGrid: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '20px',
-  },
-  layoutGrid: {
-    display: 'grid',
-    gridTemplateColumns: '2fr 1fr',
-    gap: '24px',
-    '@media (max-width: 900px)': {
-      gridTemplateColumns: '1fr',
-    }
-  },
-  mainCol: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '24px',
-  },
-  sideCol: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '24px',
-  },
-  quickNavigationBox: {
-    backgroundColor: 'rgba(31, 41, 55, 0.65)',
-    backdropFilter: 'blur(12px)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    borderRadius: '16px',
-    padding: '24px',
-  },
-  boxTitle: {
-    margin: '0 0 16px 0',
-    fontSize: '1rem',
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  navigationLinks: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-  },
-  navLinkItem: {
-    color: '#94a3b8',
-    textDecoration: 'none',
-    fontSize: '0.92rem',
-    padding: '10px 14px',
-    borderRadius: '8px',
-    backgroundColor: 'rgba(17, 24, 39, 0.3)',
-    border: '1px solid rgba(255, 255, 255, 0.02)',
-    transition: 'all 0.15s ease',
-    ':hover': {
-      color: '#61dafb',
-      backgroundColor: 'rgba(97, 218, 251, 0.08)',
-      transform: 'translateX(4px)',
-    }
-  },
-  reportsList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-  },
-  emptyTabState: {
-    backgroundColor: 'rgba(31, 41, 55, 0.5)',
-    border: '1px dashed rgba(255, 255, 255, 0.15)',
-    borderRadius: '16px',
-    padding: '48px',
-    textAlign: 'center',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  reportRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '16px 20px',
-    backgroundColor: 'rgba(31, 41, 55, 0.5)',
-    border: '1px solid rgba(255, 255, 255, 0.05)',
-    borderRadius: '12px',
-    gap: '20px',
-    flexWrap: 'wrap',
-  },
-  reportRowLeft: {
-    display: 'flex',
-    gap: '16px',
-    alignItems: 'center',
-    flex: 1,
-    minWidth: '280px',
-  },
-  reportThumb: {
-    width: '64px',
-    height: '64px',
-    borderRadius: '8px',
-    objectFit: 'cover',
-  },
-  reportThumbPlaceholder: {
-    width: '64px',
-    height: '64px',
-    borderRadius: '8px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '1.8rem',
-  },
-  reportRowTitle: {
-    margin: '0 0 4px 0',
-    fontSize: '1.05rem',
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  reportRowDesc: {
-    margin: '0 0 8px 0',
-    fontSize: '0.88rem',
-    color: '#94a3b8',
-    lineHeight: 1.4,
-  },
-  reportMeta: {
-    display: 'flex',
-    gap: '8px',
-    alignItems: 'center',
-    fontSize: '0.78rem',
-    color: '#64748b',
-    flexWrap: 'wrap',
-  },
-  statusBadge: {
-    padding: '1px 6px',
-    borderRadius: '4px',
-    fontSize: '0.7rem',
-    fontWeight: '700',
-  },
-  reportRowActions: {
-    display: 'flex',
-    gap: '10px',
-  },
-  actionBtnView: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    color: '#f8fafc',
-    textDecoration: 'none',
-    padding: '8px 16px',
-    borderRadius: '8px',
-    fontSize: '0.85rem',
-    fontWeight: '600',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    transition: 'all 0.15s ease',
-  },
-  actionBtnDelete: {
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    color: '#ef4444',
-    padding: '8px 16px',
-    borderRadius: '8px',
-    fontSize: '0.85rem',
-    fontWeight: '600',
-    border: '1px solid rgba(239, 68, 68, 0.25)',
-    cursor: 'pointer',
-    transition: 'all 0.15s ease',
-  },
-  loadingContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '70vh',
-    backgroundColor: '#0f172a',
-  },
-  spinner: {
-    width: '40px',
-    height: '40px',
-    border: '4px solid rgba(97, 218, 251, 0.1)',
-    borderTop: '4px solid #61dafb',
-    borderRadius: '50%',
-    animation: 'spin 1s linear infinite',
-  }
 };
 
 export default Dashboard;

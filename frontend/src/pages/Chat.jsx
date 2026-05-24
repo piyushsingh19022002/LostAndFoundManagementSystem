@@ -4,6 +4,8 @@ import { io } from 'socket.io-client';
 import API from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import Loader from '../components/Loader';
+import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
 
 const Chat = () => {
   const { claimId } = useParams();
@@ -126,14 +128,14 @@ const Chat = () => {
 
   if (error) {
     return (
-      <div style={styles.container}>
-        <div style={styles.errorCard}>
-          <span style={styles.errorIcon}>⚠️</span>
-          <h3 style={styles.errorTitle}>Access Denied</h3>
-          <p style={styles.errorMessage}>{error}</p>
-          <button onClick={() => navigate('/dashboard')} style={styles.errorBtn}>
+      <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center px-4">
+        <div className="flex flex-col items-center text-center py-10 px-6 bg-[var(--bg-card)] border border-dashed border-border-subtle rounded-3xl max-w-md w-full shadow-lg">
+          <span className="text-4xl mb-4">⚠️</span>
+          <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2">Access Denied</h3>
+          <p className="text-xs text-[var(--text-secondary)] mb-6 leading-relaxed">{error}</p>
+          <Button variant="primary" size="sm" onClick={() => navigate('/dashboard')}>
             Back to Dashboard
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -144,93 +146,77 @@ const Chat = () => {
   const itemTitle = claim?.item?.title || 'Unknown Item';
 
   return (
-    <div style={styles.container}>
-      <div style={styles.chatBox}>
+    <div className="min-h-screen bg-[var(--bg-primary)] px-4 py-8 flex items-center justify-center transition-colors duration-300">
+      <Card className="w-full max-w-3xl h-[75vh] flex flex-col p-0 overflow-hidden shadow-2xl relative">
         {/* Chat Header */}
-        <div style={styles.header}>
-          <div style={styles.headerInfo}>
+        <div className="px-6 py-4 border-b border-border-subtle flex justify-between items-center bg-slate-950/15">
+          <div className="flex flex-col gap-1">
             {loading ? (
               <div className="space-y-1.5 animate-pulse">
-                <div className="w-32 h-5 bg-slate-800 rounded" />
-                <div className="w-48 h-3.5 bg-slate-850 rounded" />
+                <div className="w-32 h-4 bg-slate-800 rounded" />
+                <div className="w-48 h-3 bg-slate-800 rounded" />
               </div>
             ) : (
               <>
-                <span style={styles.partnerName}>{chatPartner?.name || 'Anonymous User'}</span>
-                <span style={styles.itemTitleLink}>Discussing: {itemTitle}</span>
+                <span className="text-sm font-bold text-[var(--text-primary)] uppercase tracking-wide">{chatPartner?.name || 'Anonymous User'}</span>
+                <span className="text-[10px] text-[var(--text-secondary)] font-mono uppercase tracking-wider">Discussing: {itemTitle}</span>
               </>
             )}
           </div>
-          <div style={styles.headerMeta}>
+          <div className="flex items-center gap-3">
             {!loading && (
-              <span style={{
-                ...styles.statusBadge,
-                backgroundColor: claim?.status === 'approved' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
-                color: claim?.status === 'approved' ? '#34d399' : '#fbbf24',
-                border: claim?.status === 'approved' ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(245, 158, 11, 0.3)'
-              }}>
-                {claim?.status === 'approved' ? 'Claim Approved ✅' : 'Claim Pending ⏳'}
+              <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold font-mono uppercase tracking-wider border ${
+                claim?.status === 'approved' 
+                  ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/15' 
+                  : 'bg-amber-500/10 text-amber-500 border-amber-500/15'
+              }`}>
+                {claim?.status === 'approved' ? 'Approved' : 'Pending'}
               </span>
             )}
-            <button onClick={() => navigate(-1)} style={styles.closeBtn}>✕ Close</button>
+            <button onClick={() => navigate(-1)} className="px-3 py-1.5 rounded-full border border-border-subtle bg-slate-950/20 text-[var(--text-primary)] hover:border-slate-400 transition-all font-mono text-[9px] uppercase tracking-wider font-bold cursor-pointer">
+              ✕ Close
+            </button>
           </div>
         </div>
 
         {/* Messages Container */}
-        <div style={styles.messagesContainer}>
+        <div className="flex-1 p-6 overflow-y-auto flex flex-col gap-4">
           {loading ? (
-            <div className="space-y-6 w-full">
-              {/* Left message skeleton */}
+            <div className="space-y-4 w-full">
               <div className="flex justify-start">
-                <div className="w-1/2 p-4 bg-slate-900/60 border border-slate-800/80 rounded-2xl rounded-bl-sm animate-pulse flex flex-col gap-2.5">
+                <div className="w-1/2 p-4 bg-slate-950/20 border border-border-subtle rounded-2xl rounded-bl-none animate-pulse flex flex-col gap-2">
                   <div className="w-16 h-3 bg-slate-800 rounded" />
-                  <div className="w-full h-3.5 bg-slate-800 rounded" />
+                  <div className="w-full h-3 bg-slate-800 rounded" />
                 </div>
               </div>
-              {/* Right message skeleton */}
               <div className="flex justify-end">
-                <div className="w-2/5 p-4 bg-indigo-950/10 border border-indigo-500/10 rounded-2xl rounded-br-sm animate-pulse flex justify-end">
-                  <div className="w-4/5 h-3.5 bg-indigo-500/10 rounded" />
-                </div>
-              </div>
-              {/* Left message skeleton */}
-              <div className="flex justify-start">
-                <div className="w-3/5 p-4 bg-slate-900/60 border border-slate-800/80 rounded-2xl rounded-bl-sm animate-pulse flex flex-col gap-2.5">
-                  <div className="w-20 h-3 bg-slate-800 rounded" />
-                  <div className="w-5/6 h-3.5 bg-slate-800 rounded" />
+                <div className="w-2/5 p-4 bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/10 rounded-2xl rounded-br-none animate-pulse flex justify-end">
+                  <div className="w-4/5 h-3 bg-[var(--accent-primary)]/20 rounded" />
                 </div>
               </div>
             </div>
           ) : messages.length === 0 ? (
-            <div style={styles.emptyChat}>
-              <span style={styles.emptyChatIcon}>💬</span>
-              <p style={styles.emptyChatText}>No messages yet. Send a message to start the conversation!</p>
+            <div className="flex-1 flex flex-col items-center justify-center text-[var(--text-secondary)]">
+              <span className="text-4xl mb-3">💬</span>
+              <p className="text-xs text-center max-w-xs font-mono uppercase tracking-wider leading-relaxed">No messages yet. Send a message to start the conversation!</p>
             </div>
           ) : (
             messages.map((msg) => {
               const isMine = msg.sender === user?.id || msg.sender?._id === user?.id;
               return (
-                <div key={msg._id} style={{
-                  ...styles.messageRow,
-                  justifyContent: isMine ? 'flex-end' : 'flex-start'
-                }}>
-                  <div style={{
-                    ...styles.messageBubble,
-                    background: isMine ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' : 'rgba(255, 255, 255, 0.08)',
-                    border: isMine ? 'none' : '1px solid rgba(255, 255, 255, 0.06)',
-                    borderBottomRightRadius: isMine ? '4px' : '16px',
-                    borderBottomLeftRadius: isMine ? '16px' : '4px',
-                  }}>
+                <div key={msg._id} className={`flex w-full ${isMine ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[70%] p-4 flex flex-col gap-1 border border-border-subtle transition-all duration-300 ${
+                    isMine 
+                      ? 'bg-[var(--accent-primary)] text-stone-950 rounded-2xl rounded-tr-none' 
+                      : 'bg-slate-950/20 text-[var(--text-primary)] rounded-2xl rounded-tl-none'
+                  }`}>
                     {!isMine && (
-                      <span style={styles.senderLabel}>
+                      <span className="text-[9px] font-bold uppercase tracking-wider font-mono text-[var(--text-secondary)]">
                         {msg.sender?.name || 'Partner'}
                       </span>
                     )}
-                    <span style={styles.messageText}>{msg.message}</span>
-                    <span style={{
-                      ...styles.timestamp,
-                      color: isMine ? 'rgba(255, 255, 255, 0.6)' : '#9ca3af'
-                    }}>
+                    <span className="text-xs leading-relaxed break-words">{msg.message}</span>
+                    <span className={`text-[8px] font-mono self-end mt-1.5 opacity-80 ${isMine ? 'text-stone-850' : 'text-[var(--text-secondary)]'}`}>
                       {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
@@ -241,233 +227,22 @@ const Chat = () => {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input area */}
-        <form onSubmit={handleSendMessage} style={styles.inputArea}>
+        {/* Input Area */}
+        <form onSubmit={handleSendMessage} className="p-4 border-t border-border-subtle flex gap-3 bg-slate-950/15">
           <input
             type="text"
             placeholder="Type your message here..."
             value={newMessageText}
             onChange={(e) => setNewMessageText(e.target.value)}
-            style={styles.inputField}
+            className="flex-1 bg-slate-950/20 border border-border-subtle rounded-full px-5 py-3 text-xs text-[var(--text-primary)] outline-none focus:border-[var(--accent-primary)]/50 transition-all font-sans"
           />
-          <button type="submit" style={styles.sendButton}>
+          <Button type="submit" variant="primary" size="sm">
             Send ➔
-          </button>
+          </Button>
         </form>
-      </div>
+      </Card>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    minHeight: '85vh',
-    background: 'radial-gradient(circle at center, #1f2937 0%, #111827 100%)',
-    fontFamily: "'Outfit', 'Inter', sans-serif",
-    padding: '20px',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  chatBox: {
-    width: '100%',
-    maxWidth: '800px',
-    height: '75vh',
-    display: 'flex',
-    flexDirection: 'column',
-    backgroundColor: 'rgba(31, 41, 55, 0.55)',
-    backdropFilter: 'blur(16px)',
-    WebkitBackdropFilter: 'blur(16px)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    borderRadius: '16px',
-    overflow: 'hidden',
-    boxShadow: '0 15px 35px rgba(0, 0, 0, 0.3)',
-  },
-  header: {
-    padding: '16px 24px',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: 'rgba(17, 24, 39, 0.3)',
-  },
-  headerInfo: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
-  },
-  partnerName: {
-    fontSize: '1.2rem',
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  itemTitleLink: {
-    fontSize: '0.85rem',
-    color: '#9ca3af',
-  },
-  headerMeta: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-  },
-  statusBadge: {
-    padding: '4px 12px',
-    borderRadius: '20px',
-    fontSize: '0.75rem',
-    fontWeight: '700',
-  },
-  closeBtn: {
-    fontSize: '0.85rem',
-    color: '#9ca3af',
-    textDecoration: 'none',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '6px',
-    padding: '6px 12px',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-  messagesContainer: {
-    flex: 1,
-    padding: '24px',
-    overflowY: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-  },
-  emptyChat: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: '#9ca3af',
-  },
-  emptyChatIcon: {
-    fontSize: '3rem',
-    marginBottom: '12px',
-  },
-  emptyChatText: {
-    fontSize: '0.95rem',
-    textAlign: 'center',
-    maxWidth: '300px',
-    lineHeight: '1.5',
-  },
-  messageRow: {
-    display: 'flex',
-    width: '100%',
-  },
-  messageBubble: {
-    maxWidth: '70%',
-    padding: '12px 16px',
-    borderRadius: '16px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
-    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
-  },
-  senderLabel: {
-    fontSize: '0.75rem',
-    fontWeight: '700',
-    color: '#61dafb',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-  },
-  messageText: {
-    fontSize: '0.95rem',
-    color: '#ffffff',
-    lineHeight: '1.4',
-    wordBreak: 'break-word',
-  },
-  timestamp: {
-    fontSize: '0.7rem',
-    alignSelf: 'flex-end',
-    marginTop: '2px',
-  },
-  inputArea: {
-    padding: '16px 24px',
-    borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-    display: 'flex',
-    gap: '12px',
-    backgroundColor: 'rgba(17, 24, 39, 0.2)',
-  },
-  inputField: {
-    flex: 1,
-    backgroundColor: 'rgba(17, 24, 39, 0.5)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    borderRadius: '8px',
-    padding: '12px 16px',
-    color: '#ffffff',
-    fontSize: '0.95rem',
-    outline: 'none',
-    fontFamily: 'inherit',
-    transition: 'border-color 0.2s',
-  },
-  sendButton: {
-    padding: '12px 24px',
-    backgroundColor: '#61dafb',
-    color: '#0f172a',
-    border: 'none',
-    borderRadius: '8px',
-    fontWeight: '700',
-    fontSize: '0.95rem',
-    cursor: 'pointer',
-    boxShadow: '0 4px 12px rgba(97, 218, 251, 0.2)',
-    transition: 'all 0.2s',
-  },
-  loaderContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '85vh',
-    background: 'radial-gradient(circle at center, #1f2937 0%, #111827 100%)',
-  },
-  loaderText: {
-    marginTop: '16px',
-    color: '#9ca3af',
-    fontSize: '0.95rem',
-    fontWeight: '500',
-  },
-  errorCard: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    textAlign: 'center',
-    backgroundColor: 'rgba(31, 41, 55, 0.55)',
-    backdropFilter: 'blur(12px)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    borderRadius: '16px',
-    padding: '40px',
-    maxWidth: '450px',
-    width: '100%',
-    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
-  },
-  errorIcon: {
-    fontSize: '3.5rem',
-    marginBottom: '16px',
-  },
-  errorTitle: {
-    fontSize: '1.5rem',
-    fontWeight: '700',
-    color: '#ffffff',
-    margin: '0 0 10px 0',
-  },
-  errorMessage: {
-    fontSize: '0.95rem',
-    color: '#9ca3af',
-    lineHeight: '1.5',
-    margin: '0 0 24px 0',
-  },
-  errorBtn: {
-    padding: '10px 20px',
-    backgroundColor: '#61dafb',
-    color: '#0f172a',
-    border: 'none',
-    borderRadius: '6px',
-    fontWeight: '700',
-    cursor: 'pointer',
-  },
 };
 
 export default Chat;

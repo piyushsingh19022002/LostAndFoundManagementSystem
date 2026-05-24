@@ -7,6 +7,7 @@ import SearchBar from '../components/SearchBar';
 import CategoryFilter from '../components/CategoryFilter';
 import { LOST_ITEM_CATEGORIES, LOST_CATEGORY_OPTIONS } from '../constants/categories';
 import { AuthContext } from '../context/AuthContext';
+import Button from '../components/ui/Button';
 
 const LostItems = () => {
   const [items, setItems]           = useState([]);
@@ -108,19 +109,19 @@ const LostItems = () => {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.wrapper}>
+    <div className="min-h-screen bg-[var(--bg-primary)] px-4 py-16 transition-colors duration-300">
+      <div className="max-w-7xl mx-auto flex flex-col gap-10">
 
         {/* Header Block */}
-        <div style={styles.header}>
+        <div className="flex flex-wrap items-center justify-between gap-6">
           <div>
-            <h1 style={styles.title}>Reported Lost & Found Items</h1>
-            <p style={styles.subtitle}>
+            <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)] uppercase">Reported Lost & Found Items</h1>
+            <p className="text-xs text-[var(--text-secondary)] mt-1.5 leading-relaxed max-w-2xl">
               Browse items reported by our community to help reunite them with their owners.
             </p>
           </div>
-          <Link to="/add-lost-item" style={styles.createBtn}>
-            + Report Lost Item
+          <Link to="/add-lost-item" className="no-underline">
+            <Button variant="primary" size="sm">+ Report Lost Item</Button>
           </Link>
         </div>
 
@@ -144,15 +145,15 @@ const LostItems = () => {
           categories={LOST_ITEM_CATEGORIES}
           selected={category}
           onSelect={handleFilterChange(setCategory)}
-          accentColor="rgba(97, 218, 251, 0.15)"
-          accentBorder="rgba(97, 218, 251, 0.5)"
-          accentTextColor="#61dafb"
+          accentColor="var(--accent-primary)"
+          accentBorder="var(--accent-primary)"
+          accentTextColor="var(--bg-primary)"
           label="Filter lost items by category"
         />
 
         {/* Results Count */}
         {!loading && !error && (
-          <p style={styles.resultsCount}>
+          <p className="text-[10px] text-[var(--text-secondary)] font-mono uppercase tracking-widest -mt-4">
             {totalItems} report{totalItems !== 1 ? 's' : ''} found
             {hasActiveFilters && ' (filtered)'}
           </p>
@@ -160,7 +161,7 @@ const LostItems = () => {
 
         {/* Loading State - Grid of Skeleton Cards */}
         {loading && (
-          <div style={styles.grid}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {Array.from({ length: 6 }).map((_, idx) => (
               <ItemCardSkeleton key={idx} />
             ))}
@@ -169,29 +170,29 @@ const LostItems = () => {
 
         {/* Error State */}
         {!loading && error && (
-          <div style={styles.errorAlert}>
-            <span style={styles.alertIcon}>⚠️</span>
+          <div className="flex gap-4 bg-amber-500/5 border border-amber-500/20 rounded-2xl p-6 font-mono text-xs text-amber-500">
+            <span className="text-xl">⚠️</span>
             <div>
-              <h3 style={styles.alertTitle}>Unable to load feed</h3>
-              <p style={styles.alertMessage}>{error}</p>
+              <h3 className="font-bold text-sm mb-1">Unable to load feed</h3>
+              <p className="text-[var(--text-primary)]">{error}</p>
             </div>
           </div>
         )}
 
         {/* Empty State */}
         {!loading && !error && items.length === 0 && (
-          <div style={styles.emptyState}>
-            <span style={styles.emptyIcon}>📦</span>
-            <h3 style={styles.emptyTitle}>No items found</h3>
-            <p style={styles.emptyText}>
+          <div className="flex flex-col items-center text-center py-20 px-6 bg-[var(--bg-card)] border border-dashed border-border-subtle rounded-3xl">
+            <span className="text-4xl mb-4">📦</span>
+            <h3 className="text-lg font-bold mb-2">No items found</h3>
+            <p className="text-xs text-[var(--text-secondary)] mb-6 max-w-sm">
               {hasActiveFilters
                 ? 'No items match your active search filters. Try adjusting or clearing them.'
                 : 'No items have been reported yet. Be the first!'}
             </p>
             {hasActiveFilters && (
-              <button onClick={handleClearFilters} style={styles.resetBtn}>
+              <Button variant="outline" size="sm" onClick={handleClearFilters}>
                 Clear Filters
-              </button>
+              </Button>
             )}
           </div>
         )}
@@ -199,7 +200,7 @@ const LostItems = () => {
         {/* Items Grid */}
         {!loading && !error && items.length > 0 && (
           <>
-            <div style={styles.grid}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {items.map((item) => (
                 <ItemCard
                   key={item._id}
@@ -212,49 +213,43 @@ const LostItems = () => {
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div style={styles.paginationContainer}>
-                <button
+              <div className="flex justify-center items-center gap-2 mt-12 flex-wrap font-mono">
+                <Button
                   onClick={() => setPage(prev => Math.max(prev - 1, 1))}
                   disabled={page === 1}
-                  style={{
-                    ...styles.pageBtn,
-                    ...(page === 1 ? styles.disabledPageBtn : {})
-                  }}
+                  variant="outline"
+                  size="sm"
                   aria-label="Previous Page"
                 >
-                  &larr; Previous
-                </button>
+                  &larr; Prev
+                </Button>
 
                 {Array.from({ length: totalPages }).map((_, idx) => {
                   const pageNum = idx + 1;
                   const isActive = page === pageNum;
                   return (
-                    <button
+                    <Button
                       key={pageNum}
                       onClick={() => setPage(pageNum)}
-                      style={{
-                        ...styles.pageBtn,
-                        ...(isActive ? styles.activePageBtn : {})
-                      }}
+                      variant={isActive ? 'primary' : 'outline'}
+                      size="sm"
                       aria-label={`Page ${pageNum}`}
                       aria-current={isActive ? 'page' : undefined}
                     >
                       {pageNum}
-                    </button>
+                    </Button>
                   );
                 })}
 
-                <button
+                <Button
                   onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
                   disabled={page === totalPages}
-                  style={{
-                    ...styles.pageBtn,
-                    ...(page === totalPages ? styles.disabledPageBtn : {})
-                  }}
+                  variant="outline"
+                  size="sm"
                   aria-label="Next Page"
                 >
                   Next &rarr;
-                </button>
+                </Button>
               </div>
             )}
           </>
@@ -262,155 +257,6 @@ const LostItems = () => {
       </div>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    minHeight: '90vh',
-    background: 'radial-gradient(circle at top, #1f2937 0%, #111827 100%)',
-    fontFamily: "'Outfit', 'Inter', sans-serif",
-    padding: '40px 20px',
-  },
-  wrapper: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    width: '100%',
-  },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: '20px',
-    marginBottom: '32px',
-  },
-  title: {
-    fontSize: '2.5rem',
-    fontWeight: '800',
-    color: '#ffffff',
-    margin: '0 0 10px 0',
-    letterSpacing: '-0.03em',
-    background: 'linear-gradient(to right, #61dafb, #a855f7)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-  },
-  subtitle: {
-    fontSize: '1.05rem',
-    color: '#9ca3af',
-    margin: 0,
-  },
-  createBtn: {
-    padding: '12px 24px',
-    borderRadius: '8px',
-    background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-    color: '#ffffff',
-    textDecoration: 'none',
-    fontWeight: '700',
-    fontSize: '0.95rem',
-    boxShadow: '0 4px 14px rgba(59, 130, 246, 0.3)',
-  },
-  resultsCount: {
-    color: '#6b7280',
-    fontSize: '0.88rem',
-    margin: '-10px 0 20px 0',
-  },
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-    gap: '30px',
-  },
-  loaderContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '80px 0',
-  },
-  loaderText: {
-    marginTop: '16px',
-    color: '#9ca3af',
-    fontSize: '0.95rem',
-    fontWeight: '500',
-  },
-  errorAlert: {
-    display: 'flex',
-    gap: '16px',
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    border: '1px solid rgba(239, 68, 68, 0.2)',
-    borderRadius: '12px',
-    padding: '24px',
-  },
-  alertIcon: { fontSize: '2rem' },
-  alertTitle: {
-    margin: '0 0 6px 0',
-    color: '#ef4444',
-    fontSize: '1.15rem',
-    fontWeight: '700',
-  },
-  alertMessage: {
-    margin: 0,
-    color: '#e5e7eb',
-    fontSize: '0.95rem',
-    lineHeight: '1.5',
-  },
-  emptyState: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    textAlign: 'center',
-    padding: '80px 20px',
-    backgroundColor: 'rgba(31, 41, 55, 0.3)',
-    border: '1px dashed rgba(255, 255, 255, 0.1)',
-    borderRadius: '16px',
-  },
-  emptyIcon: { fontSize: '4rem', marginBottom: '20px' },
-  emptyTitle: { fontSize: '1.5rem', color: '#ffffff', margin: '0 0 10px 0' },
-  emptyText: {
-    fontSize: '0.95rem',
-    color: '#9ca3af',
-    maxWidth: '400px',
-    margin: '0 0 24px 0',
-    lineHeight: '1.6',
-  },
-  resetBtn: {
-    padding: '10px 20px',
-    borderRadius: '8px',
-    border: '1px solid rgba(255, 255, 255, 0.15)',
-    backgroundColor: 'transparent',
-    color: '#ffffff',
-    fontSize: '0.9rem',
-    fontWeight: '600',
-    cursor: 'pointer',
-  },
-  paginationContainer: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: '10px',
-    marginTop: '48px',
-    flexWrap: 'wrap',
-  },
-  pageBtn: {
-    padding: '10px 16px',
-    borderRadius: '8px',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    backgroundColor: 'rgba(31, 41, 55, 0.4)',
-    color: '#9ca3af',
-    fontWeight: '600',
-    fontSize: '0.9rem',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-  },
-  activePageBtn: {
-    backgroundColor: '#3b82f6',
-    color: '#ffffff',
-    borderColor: '#3b82f6',
-    boxShadow: '0 0 12px rgba(59, 130, 246, 0.4)',
-  },
-  disabledPageBtn: {
-    opacity: 0.4,
-    cursor: 'not-allowed',
-  },
 };
 
 export default LostItems;

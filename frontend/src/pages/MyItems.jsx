@@ -4,6 +4,7 @@ import API from '../services/api';
 import Loader from '../components/Loader';
 import ItemManagementCard from '../components/ItemManagementCard';
 import DeleteConfirmation from '../components/DeleteConfirmation';
+import Button from '../components/ui/Button';
 
 const MyItems = () => {
   const [items, setItems] = useState([]);
@@ -92,194 +93,88 @@ const MyItems = () => {
 
   if (loading) {
     return (
-      <div style={styles.loadingContainer}>
-        <Loader size="50px" color="#61dafb" />
-        <p style={{ marginTop: '16px', color: '#94a3b8' }}>Loading your reports...</p>
+      <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center gap-4">
+        <Loader size="50px" color="var(--accent-primary)" />
+        <p className="text-xs font-mono text-[var(--text-secondary)] uppercase tracking-wider">Loading your reports...</p>
       </div>
     );
   }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h2 style={styles.titleText}>Manage My Reports</h2>
-        <p style={styles.subtitleText}>Manage, edit, or delete the items you have reported on the platform.</p>
+    <div className="min-h-screen bg-[var(--bg-primary)] px-4 py-16 transition-colors duration-300">
+      <div className="max-w-7xl mx-auto flex flex-col gap-10">
         
-        {/* Toggle filters */}
-        <div style={styles.filterBar}>
-          {['All', 'Lost', 'Found'].map(tab => (
-            <button
-              key={tab}
-              onClick={() => setFilter(tab)}
-              style={{
-                ...styles.filterBtn,
-                backgroundColor: filter === tab ? 'rgba(97, 218, 251, 0.15)' : 'transparent',
-                borderColor: filter === tab ? '#61dafb' : 'rgba(255, 255, 255, 0.08)',
-                color: filter === tab ? '#61dafb' : '#94a3b8',
-                fontWeight: filter === tab ? '700' : '500',
-              }}
-            >
-              {tab === 'All' ? '🗂️ All Reports' : tab === 'Lost' ? '🎒 Lost' : '🎁 Found'}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {error && (
-        <div style={styles.errorAlert}>
-          <span>⚠️ {error}</span>
-          <button onClick={fetchMyItems} style={styles.retryBtn}>Retry</button>
-        </div>
-      )}
-
-      {!error && filteredItems.length === 0 ? (
-        <div style={styles.emptyState}>
-          <div style={styles.emptyIcon}>📦</div>
-          <h3>No reports found</h3>
-          <p>You haven't reported any {filter !== 'All' ? filter.toLowerCase() : ''} items yet.</p>
-          <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
-            <button onClick={() => navigate('/add-lost-item')} style={styles.btnActionLost}>Report Lost</button>
-            <button onClick={() => navigate('/add-found-item')} style={styles.btnActionFound}>Report Found</button>
+        {/* Header Block */}
+        <div className="flex flex-col gap-2">
+          <h2 className="text-2xl font-bold tracking-tight text-[var(--text-primary)] uppercase">Manage My Reports</h2>
+          <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+            Manage, edit, or delete the items you have reported on the platform.
+          </p>
+          
+          {/* Toggle filters */}
+          <div className="flex gap-2 p-1 bg-slate-950/20 border border-border-subtle rounded-full w-fit max-w-full overflow-x-auto scrollbar-none mt-4">
+            {['All', 'Lost', 'Found'].map(tab => (
+              <button
+                key={tab}
+                onClick={() => setFilter(tab)}
+                className={`px-4 py-2 rounded-full font-mono text-[10px] uppercase tracking-wider transition-all duration-300 cursor-pointer ${
+                  filter === tab
+                    ? 'bg-[var(--text-primary)] text-[var(--bg-primary)] font-bold shadow-md'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                }`}
+              >
+                {tab === 'All' ? '🗂️ All' : tab === 'Lost' ? '🎒 Lost' : '🎁 Found'}
+              </button>
+            ))}
           </div>
         </div>
-      ) : (
-        <div style={styles.grid}>
-          {filteredItems.map(item => (
-            <div key={item._id} style={styles.gridItem}>
-              <ItemManagementCard 
-                item={item} 
-                onEdit={handleEditClick} 
-                onDelete={handleDeleteClick} 
-              />
-            </div>
-          ))}
-        </div>
-      )}
 
-      {/* Reusable safety delete confirmation modal */}
-      <DeleteConfirmation 
-        isOpen={deleteModalOpen} 
-        itemTitle={itemToDelete ? itemToDelete.title : ''} 
-        onConfirm={confirmDelete} 
-        onCancel={cancelDelete} 
-      />
+        {error && (
+          <div className="flex gap-4 bg-amber-500/5 border border-amber-500/20 rounded-2xl p-6 font-mono text-xs text-amber-500">
+            <span className="text-xl">⚠️</span>
+            <div>
+              <p className="text-[var(--text-primary)] mb-4">{error}</p>
+              <Button variant="outline" size="sm" onClick={fetchMyItems}>Retry</Button>
+            </div>
+          </div>
+        )}
+
+        {!error && filteredItems.length === 0 ? (
+          <div className="flex flex-col items-center text-center py-20 px-6 bg-[var(--bg-card)] border border-dashed border-border-subtle rounded-3xl">
+            <span className="text-4xl mb-4">📦</span>
+            <h3 className="text-lg font-bold mb-2">No reports found</h3>
+            <p className="text-xs text-[var(--text-secondary)] mb-6 max-w-sm">
+              You haven't reported any {filter !== 'All' ? filter.toLowerCase() : ''} items yet.
+            </p>
+            <div className="flex gap-4 font-mono">
+              <Button variant="primary" size="sm" onClick={() => navigate('/add-lost-item')}>Report Lost</Button>
+              <Button variant="secondary" size="sm" onClick={() => navigate('/add-found-item')}>Report Found</Button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredItems.map(item => (
+              <div key={item._id} className="h-full">
+                <ItemManagementCard 
+                  item={item} 
+                  onEdit={handleEditClick} 
+                  onDelete={handleDeleteClick} 
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Reusable safety delete confirmation modal */}
+        <DeleteConfirmation 
+          isOpen={deleteModalOpen} 
+          itemTitle={itemToDelete ? itemToDelete.title : ''} 
+          onConfirm={confirmDelete} 
+          onCancel={cancelDelete} 
+        />
+      </div>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: '40px 20px',
-    minHeight: '80vh',
-    fontFamily: "'Outfit', 'Inter', sans-serif",
-  },
-  loadingContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '60vh',
-  },
-  header: {
-    marginBottom: '40px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-  },
-  titleText: {
-    margin: 0,
-    fontSize: '2.25rem',
-    fontWeight: '800',
-    color: '#ffffff',
-    letterSpacing: '-0.025em',
-    background: 'linear-gradient(to right, #61dafb, #34d399)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-  },
-  subtitleText: {
-    margin: 0,
-    fontSize: '1rem',
-    color: '#94a3b8',
-  },
-  filterBar: {
-    display: 'flex',
-    gap: '10px',
-    marginTop: '16px',
-  },
-  filterBtn: {
-    padding: '8px 16px',
-    borderRadius: '8px',
-    border: '1px solid',
-    fontSize: '0.85rem',
-    cursor: 'pointer',
-    transition: 'all 0.15s ease',
-  },
-  errorAlert: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
-    border: '1px solid rgba(239, 68, 68, 0.3)',
-    borderRadius: '8px',
-    padding: '12px 16px',
-    color: '#f8fafc',
-    marginBottom: '24px',
-  },
-  retryBtn: {
-    backgroundColor: 'transparent',
-    border: 'none',
-    color: '#61dafb',
-    fontWeight: '700',
-    cursor: 'pointer',
-    textDecoration: 'underline',
-  },
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-    gap: '24px',
-  },
-  gridItem: {
-    height: '100%',
-  },
-  emptyState: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    textAlign: 'center',
-    padding: '60px 20px',
-    backgroundColor: 'rgba(31, 41, 55, 0.3)',
-    backdropFilter: 'blur(8px)',
-    border: '1px solid rgba(255, 255, 255, 0.05)',
-    borderRadius: '16px',
-    marginTop: '20px',
-  },
-  emptyIcon: {
-    fontSize: '3.5rem',
-    marginBottom: '16px',
-  },
-  btnActionLost: {
-    padding: '10px 20px',
-    borderRadius: '8px',
-    border: 'none',
-    backgroundColor: '#3b82f6',
-    color: 'white',
-    fontWeight: '600',
-    cursor: 'pointer',
-    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.2)',
-  },
-  btnActionFound: {
-    padding: '10px 20px',
-    borderRadius: '8px',
-    border: 'none',
-    backgroundColor: '#10b981',
-    color: 'white',
-    fontWeight: '600',
-    cursor: 'pointer',
-    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)',
-  }
 };
 
 export default MyItems;

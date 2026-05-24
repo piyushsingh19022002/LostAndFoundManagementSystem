@@ -56,18 +56,17 @@ const Login = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[75vh] px-4">
+    <div className="flex items-center justify-center min-h-[80vh] px-4 relative">
       {/* Background blobs for premium feel */}
-      <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl -z-10 animate-pulse"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-rose-500/10 rounded-full blur-3xl -z-10 animate-pulse delay-700"></div>
+      <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-[var(--glow-color)] rounded-full blur-3xl -z-10 animate-pulse"></div>
 
-      <Card className="w-full max-w-md border border-slate-800 shadow-2xl p-8 bg-slate-900/60 backdrop-blur-xl">
+      <Card className="w-full max-w-md border border-border-subtle shadow-2xl p-8 rounded-3xl">
         <div className="text-center mb-8">
-          <div className="inline-flex w-12 h-12 rounded-2xl bg-gradient-to-tr from-rose-500 to-indigo-600 items-center justify-center text-white font-bold text-xl mb-4 shadow shadow-indigo-500/20">
+          <div className="inline-flex w-12 h-12 rounded-2xl bg-slate-950/20 border border-[var(--accent-primary)]/35 text-[var(--accent-primary)] items-center justify-center font-bold text-xl mb-4 shadow-[0_4px_16px_var(--glow-color)]">
             F
           </div>
-          <h2 className="text-3xl font-extrabold tracking-tight text-white mb-2">Welcome Back</h2>
-          <p className="text-sm text-slate-400">Log in to manage reports and claim requests</p>
+          <h2 className="text-2xl font-extrabold tracking-tight text-[var(--text-primary)] mb-2 uppercase">Welcome Back</h2>
+          <p className="text-xs text-[var(--text-secondary)] uppercase tracking-wider font-mono">Log in to manage reports and claim requests</p>
         </div>
 
         <form onSubmit={onSubmit} className="space-y-6">
@@ -83,13 +82,13 @@ const Login = () => {
           />
 
           <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-sm font-semibold text-slate-300">
+            <div className="flex items-center justify-between mb-1.5 font-mono">
+              <label className="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">
                 Password
               </label>
               <Link 
                 to="/forgot-password" 
-                className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition-colors"
+                className="text-[10px] font-bold text-[var(--accent-primary)] hover:underline uppercase tracking-wider"
               >
                 Forgot Password?
               </Link>
@@ -115,12 +114,12 @@ const Login = () => {
           </Button>
         </form>
 
-        <div className="mt-8 text-center border-t border-slate-800/80 pt-6">
-          <p className="text-sm text-slate-400">
+        <div className="mt-8 text-center border-t border-border-subtle pt-6 font-mono">
+          <p className="text-xs text-[var(--text-secondary)]">
             Don't have an account?{' '}
             <Link 
               to="/register" 
-              className="font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
+              className="font-bold text-[var(--accent-primary)] hover:underline uppercase tracking-wider"
             >
               Register here
             </Link>

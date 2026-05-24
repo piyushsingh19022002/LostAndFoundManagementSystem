@@ -2,9 +2,6 @@ import React from 'react';
 
 /**
  * ProfileSection — Profile metadata component.
- *
- * Props:
- *   user: User object containing name, email, role.
  */
 const ProfileSection = ({ user }) => {
   if (!user) return null;
@@ -16,9 +13,9 @@ const ProfileSection = ({ user }) => {
       </div>
       <div style={styles.info}>
         <h3 style={styles.name}>{user.name}</h3>
-        <p style={styles.email}>📧 {user.email}</p>
+        <p style={styles.email}>// {user.email}</p>
         <div style={styles.roleContainer}>
-          <span style={styles.badgeLabel}>Account Level:</span>
+          <span style={styles.badgeLabel}>Access Level:</span>
           <span style={styles.roleBadge}>{user.role || 'User'}</span>
         </div>
       </div>
@@ -28,28 +25,31 @@ const ProfileSection = ({ user }) => {
 
 const styles = {
   container: {
-    backgroundColor: 'rgba(31, 41, 55, 0.65)',
-    backdropFilter: 'blur(12px)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    borderRadius: '16px',
+    backgroundColor: 'var(--bg-card)',
+    backdropFilter: 'blur(20px)',
+    WebkitBackdropFilter: 'blur(20px)',
+    border: '1px solid var(--border-subtle)',
+    borderRadius: '20px',
     padding: '24px',
     display: 'flex',
     alignItems: 'center',
     gap: '20px',
     width: '100%',
+    fontFamily: "'Space Grotesk', 'Inter', sans-serif",
   },
   avatar: {
-    width: '64px',
-    height: '64px',
+    width: '56px',
+    height: '56px',
     borderRadius: '50%',
-    background: 'linear-gradient(135deg, #61dafb 0%, #3b82f6 100%)',
-    color: '#111827',
-    fontSize: '1.8rem',
-    fontWeight: '800',
+    backgroundColor: 'var(--bg-primary)',
+    border: '1px solid var(--border-subtle)',
+    color: 'var(--text-primary)',
+    fontSize: '1.5rem',
+    fontWeight: '700',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontFamily: "'Outfit', 'Inter', sans-serif",
+    fontFamily: "'JetBrains Mono', monospace",
   },
   info: {
     display: 'flex',
@@ -58,14 +58,15 @@ const styles = {
   },
   name: {
     margin: 0,
-    fontSize: '1.25rem',
+    fontSize: '1.1rem',
     fontWeight: '700',
-    color: '#ffffff',
+    color: 'var(--text-primary)',
   },
   email: {
     margin: 0,
-    fontSize: '0.88rem',
-    color: '#9ca3af',
+    fontSize: '0.75rem',
+    color: 'var(--text-secondary)',
+    fontFamily: "'JetBrains Mono', monospace",
   },
   roleContainer: {
     display: 'flex',
@@ -74,18 +75,20 @@ const styles = {
     marginTop: '4px',
   },
   badgeLabel: {
-    fontSize: '0.78rem',
-    color: '#6b7280',
+    fontSize: '0.72rem',
+    color: 'var(--text-secondary)',
   },
   roleBadge: {
     padding: '2px 8px',
-    borderRadius: '4px',
-    fontSize: '0.72rem',
-    fontWeight: '700',
-    backgroundColor: 'rgba(97, 218, 251, 0.12)',
-    color: '#61dafb',
-    border: '1px solid rgba(97, 218, 251, 0.25)',
+    borderRadius: '9999px',
+    fontSize: '0.62rem',
+    fontWeight: '750',
+    backgroundColor: 'var(--bg-primary)',
+    color: 'var(--text-primary)',
+    border: '1px solid var(--border-subtle)',
     textTransform: 'uppercase',
+    fontFamily: "'JetBrains Mono', monospace",
+    letterSpacing: '0.05em',
   }
 };
 

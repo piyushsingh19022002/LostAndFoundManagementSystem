@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import API from '../../services/api';
+import Card from '../../components/ui/Card';
+import Button from '../../components/ui/Button';
+import { FiUsers, FiPackage, FiSearch, FiMessageSquare, FiRefreshCw, FiAlertTriangle, FiArrowRight, FiShield, FiActivity } from 'react-icons/fi';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -28,22 +31,22 @@ const AdminDashboard = () => {
 
   if (loading) {
     return (
-      <div style={styles.loadingContainer}>
-        <div style={styles.spinner}></div>
-        <p style={{ marginTop: '16px', color: '#9ca3af' }}>Gathering platform intelligence...</p>
+      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
+        <div className="w-10 h-10 rounded-full border-2 border-[var(--accent-primary)]/20 border-t-[var(--accent-primary)] animate-spin" />
+        <p className="text-xs font-mono text-[var(--text-secondary)] uppercase tracking-widest animate-pulse">// Gathering platform intelligence...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div style={styles.errorContainer}>
-        <div style={styles.errorCard}>
-          <span style={styles.errorIcon}>⚠️</span>
-          <h3 style={{ margin: '10px 0', fontSize: '1.2rem' }}>Error Loading Dashboard</h3>
-          <p style={{ color: '#ef4444', marginBottom: '20px' }}>{error}</p>
-          <button onClick={fetchAnalytics} style={styles.btnRetry}>Retry</button>
-        </div>
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <Card className="text-center p-10 max-w-sm border border-rose-500/20">
+          <FiAlertTriangle className="text-rose-400 text-3xl mx-auto mb-4" />
+          <h3 className="font-bold text-[var(--text-primary)] mb-2 uppercase text-sm">Error Loading Dashboard</h3>
+          <p className="text-xs text-rose-400 mb-6 font-mono">{error}</p>
+          <Button variant="danger" onClick={fetchAnalytics} size="sm">Retry</Button>
+        </Card>
       </div>
     );
   }
@@ -52,306 +55,125 @@ const AdminDashboard = () => {
     {
       title: 'Total Users',
       value: analytics?.totalUsers ?? 0,
-      icon: '👥',
-      color: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-      glow: 'rgba(59, 130, 246, 0.3)',
+      icon: FiUsers,
+      colorClass: 'text-blue-400',
+      bgClass: 'bg-blue-500/10 border-blue-500/20',
       desc: 'Active accounts on the platform',
-      link: '/admin/users'
+      link: '/admin/users',
     },
     {
       title: 'Lost Item Reports',
       value: analytics?.totalLostItems ?? 0,
-      icon: '📦',
-      color: 'linear-gradient(135deg, #f43f5e 0%, #be123c 100%)',
-      glow: 'rgba(244, 63, 94, 0.3)',
+      icon: FiPackage,
+      colorClass: 'text-rose-400',
+      bgClass: 'bg-rose-500/10 border-rose-500/20',
       desc: 'Items reported missing by users',
-      link: '/admin/items'
+      link: '/admin/items',
     },
     {
       title: 'Found Item Listings',
       value: analytics?.totalFoundItems ?? 0,
-      icon: '🔍',
-      color: 'linear-gradient(135deg, #10b981 0%, #047857 100%)',
-      glow: 'rgba(16, 185, 129, 0.3)',
+      icon: FiSearch,
+      colorClass: 'text-emerald-400',
+      bgClass: 'bg-emerald-500/10 border-emerald-500/20',
       desc: 'Recovered items awaiting claims',
-      link: '/admin/items'
+      link: '/admin/items',
     },
     {
       title: 'Claim Requests',
       value: analytics?.totalClaims ?? 0,
-      icon: '🤝',
-      color: 'linear-gradient(135deg, #eab308 0%, #a16207 100%)',
-      glow: 'rgba(234, 179, 8, 0.3)',
+      icon: FiMessageSquare,
+      colorClass: 'text-[var(--accent-primary)]',
+      bgClass: 'bg-[var(--accent-primary)]/10 border-[var(--accent-primary)]/20',
       desc: 'Submitted claims for item returns',
-      link: '/admin'
-    }
+      link: '/admin',
+    },
   ];
 
   return (
-    <div style={styles.dashboardContainer}>
-      <header style={styles.header}>
+    <div className="flex flex-col gap-8">
+      {/* Page Header */}
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <span style={styles.pretitle}>SaaS Platform Control Room</span>
-          <h1 style={styles.title}>System Analytics</h1>
+          <p className="text-[10px] font-bold font-mono uppercase tracking-widest text-[var(--accent-primary)] mb-1">// SaaS Platform Control Room</p>
+          <h1 className="text-2xl font-extrabold tracking-tight text-[var(--text-primary)] uppercase">System Analytics</h1>
         </div>
-        <button onClick={fetchAnalytics} style={styles.btnRefresh} title="Refresh Statistics">
-          🔄 Refresh
-        </button>
-      </header>
-
-      {/* Grid of cards */}
-      <div style={styles.grid}>
-        {cards.map((card, idx) => (
-          <div 
-            key={idx} 
-            style={{
-              ...styles.card,
-              boxShadow: `0 8px 30px ${card.glow}`,
-            }}
-          >
-            <div style={styles.cardHeader}>
-              <span style={styles.cardTitle}>{card.title}</span>
-              <span style={styles.cardIcon}>{card.icon}</span>
-            </div>
-            <div style={styles.cardValue}>{card.value}</div>
-            <p style={styles.cardDesc}>{card.desc}</p>
-            <Link to={card.link} style={styles.cardAction}>
-              Manage Details &rarr;
-            </Link>
-          </div>
-        ))}
+        <Button variant="secondary" size="sm" onClick={fetchAnalytics} className="flex items-center gap-2">
+          <FiRefreshCw className="text-xs" />
+          Refresh
+        </Button>
       </div>
 
-      {/* Quick Actions Panel */}
-      <section style={styles.actionsSection}>
-        <h2 style={styles.sectionTitle}>Administrative Operations</h2>
-        <div style={styles.actionGrid}>
-          <div style={styles.actionCard} onClick={() => navigate('/admin/users')}>
-            <span style={styles.actionIcon}>👥</span>
-            <div>
-              <h3 style={styles.actionHeader}>User Operations</h3>
-              <p style={styles.actionDesc}>Manage accounts, update authorization roles, or delete problematic users.</p>
-            </div>
-          </div>
+      {/* KPI Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        {cards.map((card, idx) => {
+          const Icon = card.icon;
+          return (
+            <Card key={idx} className="flex flex-col gap-4 p-5 border border-border-subtle hover:scale-[1.01] transition-premium cursor-pointer" onClick={() => navigate(card.link)}>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold font-mono uppercase tracking-widest text-[var(--text-secondary)]">{card.title}</span>
+                <div className={`w-8 h-8 rounded-xl border flex items-center justify-center ${card.bgClass}`}>
+                  <Icon className={`text-sm ${card.colorClass}`} />
+                </div>
+              </div>
+              <div className="text-4xl font-extrabold tracking-tight text-[var(--text-primary)]">{card.value}</div>
+              <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{card.desc}</p>
+              <Link
+                to={card.link}
+                className={`flex items-center gap-1 text-[10px] font-bold font-mono uppercase tracking-widest ${card.colorClass} hover:underline`}
+                onClick={(e) => e.stopPropagation()}
+              >
+                Manage Details
+                <FiArrowRight className="text-xs" />
+              </Link>
+            </Card>
+          );
+        })}
+      </div>
 
-          <div style={styles.actionCard} onClick={() => navigate('/admin/items')}>
-            <span style={styles.actionIcon}>🛡️</span>
-            <div>
-              <h3 style={styles.actionHeader}>Moderation Center</h3>
-              <p style={styles.actionDesc}>Review and moderate user posts, delete spam, duplicate, or abusive entries.</p>
+      {/* Quick Actions */}
+      <div>
+        <h2 className="text-xs font-bold font-mono uppercase tracking-widest text-[var(--text-secondary)] mb-4">// Administrative Operations</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card
+            className="flex items-start gap-4 p-5 border border-border-subtle cursor-pointer hover:border-[var(--accent-primary)]/30 transition-premium"
+            onClick={() => navigate('/admin/users')}
+          >
+            <div className="w-10 h-10 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
+              <FiUsers className="text-blue-400" />
             </div>
-          </div>
-        </div>
-      </section>
+            <div>
+              <h3 className="text-sm font-bold text-[var(--text-primary)] uppercase mb-1">User Operations</h3>
+              <p className="text-xs text-[var(--text-secondary)] leading-relaxed">Manage accounts, update authorization roles, or delete problematic users.</p>
+            </div>
+          </Card>
 
-      {/* Server Health Status indicator */}
-      <footer style={styles.healthContainer}>
-        <div style={styles.healthHeader}>
-          <span style={styles.healthPulse}></span>
-          <span style={{ fontWeight: '600', color: '#10b981' }}>Platform Operational</span>
+          <Card
+            className="flex items-start gap-4 p-5 border border-border-subtle cursor-pointer hover:border-[var(--accent-primary)]/30 transition-premium"
+            onClick={() => navigate('/admin/items')}
+          >
+            <div className="w-10 h-10 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center flex-shrink-0">
+              <FiShield className="text-rose-400" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-[var(--text-primary)] uppercase mb-1">Moderation Center</h3>
+              <p className="text-xs text-[var(--text-secondary)] leading-relaxed">Review and moderate user posts, delete spam, duplicate, or abusive entries.</p>
+            </div>
+          </Card>
         </div>
-        <p style={{ margin: '5px 0 0 0', fontSize: '0.85rem', color: '#9ca3af' }}>
-          Role-Based Access Control (RBAC) active. Secure logging of administrative events enabled.
-        </p>
-      </footer>
+      </div>
+
+      {/* Platform Status Footer */}
+      <div className="flex items-center gap-3 bg-emerald-500/5 border border-emerald-500/15 rounded-2xl px-5 py-3">
+        <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)] animate-pulse flex-shrink-0" />
+        <div>
+          <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Platform Operational</span>
+          <p className="text-[10px] font-mono text-[var(--text-secondary)] mt-0.5">Role-Based Access Control (RBAC) active. Secure logging of administrative events enabled.</p>
+        </div>
+        <FiActivity className="text-emerald-400 ml-auto flex-shrink-0" />
+      </div>
     </div>
   );
-};
-
-const styles = {
-  dashboardContainer: {
-    animation: 'fadeIn 0.5s ease-out',
-  },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '35px',
-  },
-  pretitle: {
-    fontSize: '0.85rem',
-    fontWeight: '700',
-    color: '#f43f5e',
-    textTransform: 'uppercase',
-    letterSpacing: '0.1em',
-  },
-  title: {
-    fontSize: '2rem',
-    fontWeight: '800',
-    margin: '4px 0 0 0',
-    background: 'linear-gradient(to right, #ffffff, #9ca3af)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-  },
-  btnRefresh: {
-    padding: '10px 18px',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    borderRadius: '8px',
-    color: '#ffffff',
-    fontWeight: '700',
-    cursor: 'pointer',
-    fontSize: '0.9rem',
-    transition: 'all 0.2s ease',
-  },
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-    gap: '24px',
-    marginBottom: '40px',
-  },
-  card: {
-    background: 'rgba(17, 24, 39, 0.65)',
-    backdropFilter: 'blur(12px)',
-    WebkitBackdropFilter: 'blur(12px)',
-    borderRadius: '16px',
-    border: '1px solid rgba(255, 255, 255, 0.06)',
-    padding: '24px',
-    display: 'flex',
-    flexDirection: 'column',
-    position: 'relative',
-    overflow: 'hidden',
-    transition: 'transform 0.3s ease, border-color 0.3s ease',
-  },
-  cardHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '15px',
-  },
-  cardTitle: {
-    fontSize: '0.9rem',
-    color: '#9ca3af',
-    fontWeight: '600',
-  },
-  cardIcon: {
-    fontSize: '1.4rem',
-  },
-  cardValue: {
-    fontSize: '2.5rem',
-    fontWeight: '800',
-    color: '#ffffff',
-    lineHeight: '1.1',
-    marginBottom: '8px',
-  },
-  cardDesc: {
-    fontSize: '0.85rem',
-    color: '#6b7280',
-    margin: '0 0 16px 0',
-    lineHeight: '1.4',
-  },
-  cardAction: {
-    marginTop: 'auto',
-    color: '#f43f5e',
-    textDecoration: 'none',
-    fontSize: '0.85rem',
-    fontWeight: '700',
-    transition: 'opacity 0.2s ease',
-  },
-  actionsSection: {
-    marginBottom: '40px',
-  },
-  sectionTitle: {
-    fontSize: '1.25rem',
-    fontWeight: '700',
-    marginBottom: '20px',
-    color: '#ffffff',
-  },
-  actionGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-    gap: '20px',
-  },
-  actionCard: {
-    background: 'rgba(17, 24, 39, 0.4)',
-    border: '1px solid rgba(255, 255, 255, 0.05)',
-    borderRadius: '12px',
-    padding: '20px',
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: '16px',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-  },
-  actionIcon: {
-    fontSize: '1.8rem',
-    padding: '10px',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: '10px',
-  },
-  actionHeader: {
-    fontSize: '1rem',
-    fontWeight: '700',
-    margin: '0 0 6px 0',
-  },
-  actionDesc: {
-    fontSize: '0.85rem',
-    color: '#9ca3af',
-    margin: 0,
-    lineHeight: '1.5',
-  },
-  loadingContainer: {
-    minHeight: '400px',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  spinner: {
-    width: '40px',
-    height: '40px',
-    border: '3px solid rgba(244, 63, 94, 0.1)',
-    borderTop: '3px solid #f43f5e',
-    borderRadius: '50%',
-    animation: 'spin 1s linear infinite',
-  },
-  errorContainer: {
-    minHeight: '400px',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  errorCard: {
-    background: 'rgba(17, 24, 39, 0.7)',
-    border: '1px solid rgba(239, 68, 68, 0.2)',
-    borderRadius: '12px',
-    padding: '30px',
-    textAlign: 'center',
-    maxWidth: '400px',
-  },
-  errorIcon: {
-    fontSize: '2rem',
-  },
-  btnRetry: {
-    padding: '8px 20px',
-    backgroundColor: '#ef4444',
-    border: 'none',
-    borderRadius: '6px',
-    color: '#ffffff',
-    fontWeight: '700',
-    cursor: 'pointer',
-  },
-  healthContainer: {
-    background: 'rgba(16, 185, 129, 0.03)',
-    border: '1px solid rgba(16, 185, 129, 0.08)',
-    borderRadius: '10px',
-    padding: '16px',
-    marginTop: '20px',
-  },
-  healthHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-  },
-  healthPulse: {
-    width: '8px',
-    height: '8px',
-    backgroundColor: '#10b981',
-    borderRadius: '50%',
-    display: 'inline-block',
-    boxShadow: '0 0 10px #10b981',
-    animation: 'pulse 2s infinite',
-  },
 };
 
 export default AdminDashboard;

@@ -6,14 +6,14 @@ const Badge = ({
   className = '',
   ...props
 }) => {
-  const baseStyles = 'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider border';
+  const baseStyles = 'inline-flex items-center px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono border transition-all duration-300';
   
   const variants = {
-    success: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-sm shadow-emerald-500/5',
-    warning: 'bg-amber-500/10 text-amber-400 border-amber-500/20 shadow-sm shadow-amber-500/5',
-    error: 'bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-sm shadow-rose-500/5',
-    info: 'bg-blue-500/10 text-blue-400 border-blue-500/20 shadow-sm shadow-blue-500/5',
-    neutral: 'bg-gray-500/10 text-gray-300 border-gray-500/20 shadow-sm shadow-gray-500/5',
+    success: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30',
+    warning: 'bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/30',
+    error: 'bg-rose-500/10 text-rose-500 border-rose-500/30',
+    info: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30',
+    neutral: 'bg-slate-900/40 text-slate-400 border-border-subtle',
   };
 
   return (

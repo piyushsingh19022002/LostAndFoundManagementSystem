@@ -10,7 +10,7 @@ import React from 'react';
  */
 const ItemManagementCard = ({ item, onEdit, onDelete }) => {
   const isLost = item.category !== 'Found';
-  const badgeColor = isLost ? '#61dafb' : '#34d399';
+  const badgeColor = isLost ? '#F59E0B' : '#10B981';
   const dateStr = new Date(isLost ? item.date : item.dateFound).toLocaleDateString(undefined, {
     month: 'short',
     day: 'numeric',
@@ -22,7 +22,7 @@ const ItemManagementCard = ({ item, onEdit, onDelete }) => {
       {item.imageUrl ? (
         <img src={item.imageUrl} alt={item.title} style={styles.image} />
       ) : (
-        <div style={{ ...styles.placeholderImage, backgroundColor: isLost ? 'rgba(97, 218, 251, 0.05)' : 'rgba(52, 211, 153, 0.05)' }}>
+        <div style={{ ...styles.placeholderImage, backgroundColor: isLost ? 'rgba(245, 158, 11, 0.05)' : 'rgba(16, 185, 129, 0.05)' }}>
           {isLost ? '🎒' : '🔑'}
         </div>
       )}
@@ -33,8 +33,8 @@ const ItemManagementCard = ({ item, onEdit, onDelete }) => {
           </span>
           <span style={{ 
             ...styles.statusBadge, 
-            backgroundColor: item.status === 'lost' || item.status === 'found' ? 'rgba(239, 68, 68, 0.12)' : 'rgba(52, 211, 153, 0.12)',
-            color: item.status === 'lost' || item.status === 'found' ? '#f87171' : '#34d399'
+            backgroundColor: item.status === 'lost' || item.status === 'found' ? 'rgba(239, 68, 68, 0.12)' : 'rgba(16, 185, 129, 0.12)',
+            color: item.status === 'lost' || item.status === 'found' ? '#f87171' : '#10b981'
           }}>
             {item.status.toUpperCase()}
           </span>
@@ -63,15 +63,16 @@ const ItemManagementCard = ({ item, onEdit, onDelete }) => {
 
 const styles = {
   card: {
-    backgroundColor: 'rgba(31, 41, 55, 0.55)',
-    backdropFilter: 'blur(12px)',
-    border: '1px solid rgba(255, 255, 255, 0.06)',
-    borderRadius: '16px',
+    backgroundColor: 'var(--bg-card)',
+    backdropFilter: 'blur(20px)',
+    border: '1px solid var(--border-subtle)',
+    borderRadius: '20px',
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.3s ease',
     height: '100%',
+    boxShadow: 'var(--shadow-sm)',
   },
   image: {
     width: '100%',
@@ -99,39 +100,39 @@ const styles = {
     alignItems: 'center',
   },
   badge: {
-    padding: '4px 10px',
+    padding: '4px 12px',
     borderRadius: '50px',
-    fontSize: '0.72rem',
+    fontSize: '0.65rem',
     fontWeight: '700',
-    letterSpacing: '0.02em',
+    letterSpacing: '0.05em',
     textTransform: 'uppercase',
   },
   statusBadge: {
-    padding: '2px 8px',
-    borderRadius: '4px',
-    fontSize: '0.7rem',
-    fontWeight: '700',
-    letterSpacing: '0.02em',
+    padding: '2px 10px',
+    borderRadius: '9999px',
+    fontSize: '0.62rem',
+    fontWeight: '750',
+    letterSpacing: '0.05em',
   },
   title: {
     margin: 0,
-    fontSize: '1.1rem',
+    fontSize: '1rem',
     fontWeight: '700',
-    color: '#ffffff',
+    color: 'var(--text-primary)',
   },
   desc: {
     margin: 0,
-    fontSize: '0.85rem',
-    color: '#94a3b8',
+    fontSize: '0.82rem',
+    color: 'var(--text-secondary)',
     lineHeight: 1.5,
     flex: 1,
   },
   footer: {
     display: 'flex',
     justifyContent: 'space-between',
-    fontSize: '0.78rem',
-    color: '#64748b',
-    borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+    fontSize: '0.75rem',
+    color: 'var(--text-secondary)',
+    borderTop: '1px solid var(--border-subtle)',
     paddingTop: '12px',
     marginTop: '4px',
   },
@@ -148,27 +149,27 @@ const styles = {
   btnEdit: {
     flex: 1,
     padding: '8px 16px',
-    borderRadius: '8px',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    color: '#f8fafc',
-    fontSize: '0.85rem',
+    borderRadius: '9999px',
+    border: '1px solid var(--border-subtle)',
+    backgroundColor: 'var(--bg-secondary)',
+    color: 'var(--text-primary)',
+    fontSize: '0.8rem',
     fontWeight: '600',
     cursor: 'pointer',
-    transition: 'all 0.15s ease',
+    transition: 'all 0.2s ease',
     textAlign: 'center',
   },
   btnDelete: {
     flex: 1,
     padding: '8px 16px',
-    borderRadius: '8px',
+    borderRadius: '9999px',
     border: '1px solid rgba(239, 68, 68, 0.25)',
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    backgroundColor: 'rgba(239, 68, 68, 0.08)',
     color: '#ef4444',
-    fontSize: '0.85rem',
+    fontSize: '0.8rem',
     fontWeight: '600',
     cursor: 'pointer',
-    transition: 'all 0.15s ease',
+    transition: 'all 0.2s ease',
     textAlign: 'center',
   }
 };

@@ -2,26 +2,24 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import BookmarkButton from './BookmarkButton';
 
-// FoundItemCard — reusable presentational component for the found items feed grid.
-// Receives a single 'item' prop matching the FoundItem MongoDB document shape.
 const FoundItemCard = ({ item, isFavorited = false, onBookmarkToggle }) => {
   const formattedDate = new Date(item.dateFound).toLocaleDateString(undefined, {
     year: 'numeric',
-    month: 'long',
+    month: 'short',
     day: 'numeric',
   });
 
-  const statusColors = {
-    found:    { bg: 'rgba(16, 185, 129, 0.2)',  text: '#34d399', border: 'rgba(16, 185, 129, 0.3)' },
-    claimed:  { bg: 'rgba(245, 158, 11, 0.2)',  text: '#fbbf24', border: 'rgba(245, 158, 11, 0.3)' },
-    returned: { bg: 'rgba(139, 92, 246, 0.2)',  text: '#a78bfa', border: 'rgba(139, 92, 246, 0.3)' },
+  const statusStyles = {
+    found: 'bg-emerald-500/5 text-emerald-400 border-emerald-500/15',
+    claimed: 'bg-rose-500/5 text-rose-400 border-rose-500/15',
+    returned: 'bg-slate-900/50 text-slate-400 border-slate-800',
   };
-  const statusStyle = statusColors[item.status] || statusColors.found;
+  const statusClass = statusStyles[item.status] || statusStyles.found;
 
   return (
-    <div style={styles.card}>
+    <div className="relative h-full flex flex-col glass-panel rounded-3xl overflow-hidden transition-premium hover:-translate-y-1 hover:shadow-2xl hover:border-[var(--accent-primary)]/30">
       {/* Bookmark Button */}
-      <div style={styles.bookmarkWrapper}>
+      <div className="absolute top-3 right-3 z-15">
         <BookmarkButton
           itemId={item._id}
           itemModel="FoundItem"
@@ -31,58 +29,50 @@ const FoundItemCard = ({ item, isFavorited = false, onBookmarkToggle }) => {
       </div>
 
       {/* Floating Badges */}
-      <div style={styles.badgeContainer}>
-        <span style={{
-          ...styles.badge,
-          backgroundColor: 'rgba(16, 185, 129, 0.2)',
-          color: '#34d399',
-          border: '1px solid rgba(16, 185, 129, 0.3)',
-        }}>
+      <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-10 pointer-events-none">
+        <span className="px-3 py-0.5 rounded-full text-[9px] font-bold font-mono uppercase tracking-widest bg-emerald-500/10 text-emerald-500 border border-emerald-500/15 backdrop-blur-md">
           🎁 Found
         </span>
-        <span style={styles.dateBadge}>{formattedDate}</span>
+        <span className="px-3 py-0.5 rounded-full text-[9px] font-bold font-mono uppercase tracking-widest text-[var(--text-secondary)] bg-slate-950/40 border border-border-subtle backdrop-blur-md">
+          {formattedDate}
+        </span>
       </div>
 
       {/* Image Section */}
-      <div style={styles.imageSection}>
+      <div className="relative w-full h-[200px] bg-slate-950/10 flex items-center justify-center overflow-hidden border-b border-border-subtle">
         {item.imageUrl ? (
-          <img src={item.imageUrl} alt={item.title} style={styles.image} loading="lazy" />
+          <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" loading="lazy" />
         ) : (
-          <div style={styles.imagePlaceholder}>
-            <span style={styles.placeholderIcon}>🎁</span>
-            <span style={styles.placeholderText}>No Image Provided</span>
+          <div className="flex flex-col items-center gap-2">
+            <span className="text-3xl">🎁</span>
+            <span className="text-[9px] text-[var(--text-secondary)] font-semibold font-mono uppercase tracking-widest">No Image</span>
           </div>
         )}
       </div>
 
       {/* Card Content */}
-      <div style={styles.content}>
-        <h3 style={styles.title}>{item.title}</h3>
-        <p style={styles.description}>{item.description}</p>
+      <div className="p-6 flex flex-col flex-1">
+        <h3 className="text-sm font-bold text-[var(--text-primary)] mb-2 leading-relaxed tracking-wide font-sans">{item.title}</h3>
+        <p className="text-xs text-[var(--text-secondary)] mb-5 leading-relaxed font-sans line-clamp-3 h-[4.8em]">{item.description}</p>
 
-        <div style={styles.metadataGrid}>
-          <div style={styles.metaItem}>
-            <span style={styles.metaIcon}>📍</span>
-            <span style={styles.metaText}>{item.location}</span>
+        <div className="flex flex-col gap-2 mb-5 mt-auto font-mono text-[9px] text-[var(--text-secondary)] uppercase tracking-widest">
+          <div className="flex items-center gap-2">
+            <span>📍</span>
+            <span className="truncate">{item.location}</span>
           </div>
 
           {/* Status Badge inside card */}
-          <div style={styles.metaItem}>
-            <span style={styles.metaIcon}>📌</span>
-            <span style={{
-              ...styles.statusPill,
-              backgroundColor: statusStyle.bg,
-              color: statusStyle.text,
-              border: `1px solid ${statusStyle.border}`,
-            }}>
-              {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+          <div className="flex items-center gap-2">
+            <span>📌</span>
+            <span className={`px-3 py-0.5 rounded-full text-[8px] font-bold font-mono uppercase tracking-widest border ${statusClass}`}>
+              {item.status}
             </span>
           </div>
 
           {item.user && (
-            <div style={styles.metaItem}>
-              <span style={styles.metaIcon}>👤</span>
-              <span style={styles.metaText} title={item.user.email}>
+            <div className="flex items-center gap-2">
+              <span>👤</span>
+              <span className="truncate" title={item.user.email}>
                 {item.user.name || 'Anonymous'}
               </span>
             </div>
@@ -90,165 +80,15 @@ const FoundItemCard = ({ item, isFavorited = false, onBookmarkToggle }) => {
         </div>
 
         {/* Navigation Link to Details Page */}
-        <Link to={`/found-items/${item._id}`} style={styles.actionBtn}>
-          View Full Details
+        <Link 
+          to={`/found-items/${item._id}`} 
+          className="block w-full py-2.5 text-center rounded-full border border-border-subtle hover:border-[var(--accent-primary)]/50 hover:text-[var(--accent-primary)] bg-slate-950/10 hover:bg-slate-900/20 font-mono text-[9px] uppercase tracking-widest text-[var(--text-secondary)] font-bold transition-all duration-400"
+        >
+          // View Full Details
         </Link>
       </div>
     </div>
   );
-};
-
-const styles = {
-  card: {
-    backgroundColor: 'rgba(31, 41, 55, 0.5)',
-    backdropFilter: 'blur(12px)',
-    WebkitBackdropFilter: 'blur(12px)',
-    border: '1px solid rgba(16, 185, 129, 0.1)',
-    borderRadius: '16px',
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-    transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
-    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)',
-    fontFamily: "'Outfit', 'Inter', sans-serif",
-    height: '100%',
-    position: 'relative',
-  },
-  bookmarkWrapper: {
-    position: 'absolute',
-    top: '12px',
-    right: '12px',
-    zIndex: 15,
-  },
-  badgeContainer: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '16px',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 10,
-    pointerEvents: 'none',
-  },
-  badge: {
-    padding: '5px 12px',
-    borderRadius: '20px',
-    fontSize: '0.72rem',
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    backdropFilter: 'blur(8px)',
-  },
-  dateBadge: {
-    padding: '6px 12px',
-    borderRadius: '20px',
-    fontSize: '0.75rem',
-    fontWeight: '600',
-    backgroundColor: 'rgba(17, 24, 39, 0.7)',
-    color: '#e5e7eb',
-    backdropFilter: 'blur(8px)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-  },
-  imageSection: {
-    position: 'relative',
-    width: '100%',
-    height: '200px',
-    backgroundColor: '#0b1f18',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-    borderBottom: '1px solid rgba(16, 185, 129, 0.08)',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-    transition: 'transform 0.3s ease',
-  },
-  imagePlaceholder: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '8px',
-  },
-  placeholderIcon: { fontSize: '2.5rem' },
-  placeholderText: {
-    fontSize: '0.8rem',
-    color: '#6b7280',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-  },
-  content: {
-    padding: '24px',
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-  },
-  title: {
-    fontSize: '1.2rem',
-    fontWeight: '700',
-    color: '#ffffff',
-    margin: '0 0 10px 0',
-    lineHeight: '1.4',
-  },
-  description: {
-    fontSize: '0.9rem',
-    color: '#9ca3af',
-    margin: '0 0 20px 0',
-    lineHeight: '1.6',
-    display: '-webkit-box',
-    WebkitLineClamp: 3,
-    WebkitBoxOrient: 'vertical',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    height: '4.8em',
-  },
-  metadataGrid: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '10px',
-    marginBottom: '24px',
-    marginTop: 'auto',
-  },
-  metaItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-  },
-  metaIcon: { fontSize: '1rem' },
-  metaText: {
-    fontSize: '0.85rem',
-    color: '#d1d5db',
-    fontWeight: '500',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  statusPill: {
-    padding: '3px 10px',
-    borderRadius: '20px',
-    fontSize: '0.75rem',
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: '0.03em',
-  },
-  actionBtn: {
-    display: 'block',
-    textAlign: 'center',
-    padding: '12px 16px',
-    borderRadius: '8px',
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    color: '#34d399',
-    textDecoration: 'none',
-    fontSize: '0.9rem',
-    fontWeight: '700',
-    border: '1px solid rgba(16, 185, 129, 0.2)',
-    transition: 'background-color 0.2s, border-color 0.2s',
-  },
 };
 
 export default FoundItemCard;

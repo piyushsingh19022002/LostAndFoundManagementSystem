@@ -3,10 +3,6 @@ import { Link } from 'react-router-dom';
 
 /**
  * RecentActivity — Activity list displaying the user's latest reports.
- *
- * Props:
- *   lostItems: Array of user's lost reports
- *   foundItems: Array of user's found reports
  */
 const RecentActivity = ({ lostItems = [], foundItems = [] }) => {
   // Combine and sort by createdAt
@@ -32,7 +28,9 @@ const RecentActivity = ({ lostItems = [], foundItems = [] }) => {
         {activities.map((item) => {
           const isLost = item.type === 'Lost';
           const detailsPath = isLost ? `/lost-items/${item._id}` : `/found-items/${item._id}`;
-          const badgeColor = isLost ? '#61dafb' : '#34d399';
+          const badgeColor = isLost ? 'var(--accent-primary)' : 'var(--color-emerald-550)';
+          const badgeBg = isLost ? 'var(--bg-secondary)' : 'rgba(16, 185, 129, 0.05)';
+          const badgeBorder = isLost ? 'var(--border-subtle)' : 'rgba(16, 185, 129, 0.15)';
           const dateStr = new Date(item.createdAt).toLocaleDateString(undefined, {
             month: 'short',
             day: 'numeric',
@@ -43,7 +41,7 @@ const RecentActivity = ({ lostItems = [], foundItems = [] }) => {
           return (
             <div key={item._id} style={styles.activityItem}>
               <div style={styles.left}>
-                <span style={{ ...styles.badge, backgroundColor: `${badgeColor}15`, color: badgeColor, border: `1px solid ${badgeColor}33` }}>
+                <span style={{ ...styles.badge, backgroundColor: badgeBg, color: badgeColor, borderColor: badgeBorder }}>
                   {item.type}
                 </span>
                 <div style={styles.textContainer}>
@@ -64,19 +62,22 @@ const RecentActivity = ({ lostItems = [], foundItems = [] }) => {
 
 const styles = {
   container: {
-    backgroundColor: 'rgba(31, 41, 55, 0.65)',
-    backdropFilter: 'blur(12px)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    borderRadius: '16px',
+    backgroundColor: 'var(--bg-card)',
+    backdropFilter: 'blur(20px)',
+    WebkitBackdropFilter: 'blur(20px)',
+    border: '1px solid var(--border-subtle)',
+    borderRadius: '20px',
     padding: '24px',
     width: '100%',
+    fontFamily: "'Space Grotesk', 'Inter', sans-serif",
   },
   heading: {
     margin: '0 0 16px 0',
-    fontSize: '1.1rem',
+    fontSize: '0.85rem',
     fontWeight: '700',
-    color: '#ffffff',
-    letterSpacing: '-0.01em',
+    color: 'var(--text-primary)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.1em',
   },
   list: {
     display: 'flex',
@@ -88,10 +89,10 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '12px 16px',
-    borderRadius: '10px',
-    backgroundColor: 'rgba(17, 24, 39, 0.4)',
-    border: '1px solid rgba(255, 255, 255, 0.03)',
-    transition: 'background-color 0.2s ease',
+    borderRadius: '12px',
+    backgroundColor: 'var(--bg-primary)',
+    border: '1px solid var(--border-subtle)',
+    transition: 'all 0.3s ease',
   },
   left: {
     display: 'flex',
@@ -99,12 +100,14 @@ const styles = {
     gap: '12px',
   },
   badge: {
-    padding: '4px 10px',
-    borderRadius: '50px',
-    fontSize: '0.75rem',
-    fontWeight: '700',
-    letterSpacing: '0.02em',
+    padding: '2px 8px',
+    borderRadius: '9999px',
+    fontSize: '0.62rem',
+    fontWeight: '750',
+    letterSpacing: '0.05em',
     textTransform: 'uppercase',
+    fontFamily: "'JetBrains Mono', monospace",
+    border: '1px solid',
   },
   textContainer: {
     display: 'flex',
@@ -112,44 +115,44 @@ const styles = {
     gap: '2px',
   },
   itemTitle: {
-    color: '#f3f4f6',
+    color: 'var(--text-primary)',
     fontWeight: '600',
-    fontSize: '0.92rem',
+    fontSize: '0.88rem',
     textDecoration: 'none',
     transition: 'color 0.15s ease',
     cursor: 'pointer',
-    ':hover': {
-      color: '#61dafb',
-    }
+    fontFamily: "'Space Grotesk', sans-serif",
   },
   location: {
-    fontSize: '0.75rem',
-    color: '#9ca3af',
+    fontSize: '0.72rem',
+    color: 'var(--text-secondary)',
   },
   right: {
     display: 'flex',
     alignItems: 'center',
   },
   date: {
-    fontSize: '0.75rem',
-    color: '#6b7280',
+    fontSize: '0.7rem',
+    color: 'var(--text-secondary)',
+    fontFamily: "'JetBrains Mono', monospace",
   },
   emptyState: {
-    backgroundColor: 'rgba(31, 41, 55, 0.65)',
-    backdropFilter: 'blur(12px)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    borderRadius: '16px',
+    backgroundColor: 'var(--bg-card)',
+    backdropFilter: 'blur(20px)',
+    border: '1px solid var(--border-subtle)',
+    borderRadius: '20px',
     padding: '40px 24px',
     textAlign: 'center',
+    fontFamily: "'Space Grotesk', sans-serif",
   },
   emptyIcon: {
-    fontSize: '2.5rem',
+    fontSize: '2rem',
     display: 'block',
     marginBottom: '10px',
   },
   emptyText: {
-    color: '#9ca3af',
-    fontSize: '0.9rem',
+    color: 'var(--text-secondary)',
+    fontSize: '0.85rem',
     margin: 0,
   }
 };

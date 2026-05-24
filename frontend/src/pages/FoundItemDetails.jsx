@@ -5,6 +5,8 @@ import Loader from '../components/Loader';
 import { AuthContext } from '../context/AuthContext';
 import BookmarkButton from '../components/BookmarkButton';
 import AIMatchesSection from '../components/AIMatchesSection';
+import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
 
 const FoundItemDetails = () => {
   const { id } = useParams();
@@ -66,41 +68,46 @@ const FoundItemDetails = () => {
     }
   };
 
-  // --- Render States ---
-
+  // --- Render States ---  // Rendering Loader State
   if (loading) {
     return (
-      <div style={styles.loaderContainer}>
-        <Loader size="50px" color="#10b981" />
-        <p style={styles.loaderText}>Loading found item details...</p>
+      <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center gap-4">
+        <Loader size="50px" color="var(--accent-primary)" />
+        <p className="text-xs font-mono text-[var(--text-secondary)] uppercase tracking-wider">Loading item details...</p>
       </div>
     );
   }
 
+  // Rendering Error State
   if (error) {
     return (
-      <div style={styles.container}>
-        <div style={styles.errorAlert}>
-          <span style={styles.alertIcon}>⚠️</span>
+      <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center px-4">
+        <div className="flex gap-4 bg-amber-500/5 border border-amber-500/20 rounded-2xl p-6 font-mono text-xs text-amber-500 max-w-lg w-full">
+          <span className="text-xl">⚠️</span>
           <div>
-            <h3 style={styles.alertTitle}>Error Loading Report</h3>
-            <p style={styles.alertMessage}>{error}</p>
-            <Link to="/found-items" style={styles.backBtn}>← Back to Found Items Feed</Link>
+            <h3 className="font-bold text-sm mb-1 font-sans">Error Loading Report</h3>
+            <p className="text-[var(--text-primary)] font-sans mb-4">{error}</p>
+            <Link to="/found-items" className="inline-block px-4 py-2 rounded-full border border-border-subtle bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-slate-400 transition-all no-underline font-mono uppercase text-[9px] tracking-wider font-bold">
+              Back to Found Items Feed
+            </Link>
           </div>
         </div>
       </div>
     );
   }
 
+  // Rendering Null State
   if (!item) {
     return (
-      <div style={styles.container}>
-        <div style={styles.errorAlert}>
-          <span style={styles.alertIcon}>🔍</span>
+      <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center px-4">
+        <div className="flex gap-4 bg-amber-500/5 border border-amber-500/20 rounded-2xl p-6 font-mono text-xs text-amber-500 max-w-lg w-full">
+          <span className="text-xl">🔍</span>
           <div>
-            <h3 style={styles.alertTitle}>Item Not Found</h3>
-            <p style={styles.alertMessage}>This report could not be located. It may have been deleted.</p>
-            <Link to="/found-items" style={styles.backBtn}>← Back to Found Items Feed</Link>
+            <h3 className="font-bold text-sm mb-1 font-sans">Item Not Found</h3>
+            <p className="text-[var(--text-primary)] font-sans mb-4">This report could not be located. It may have been deleted.</p>
+            <Link to="/found-items" className="inline-block px-4 py-2 rounded-full border border-border-subtle bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-slate-400 transition-all no-underline font-mono uppercase text-[9px] tracking-wider font-bold">
+              Back to Found Items Feed
+            </Link>
           </div>
         </div>
       </div>
@@ -114,45 +121,47 @@ const FoundItemDetails = () => {
     day: 'numeric',
   });
 
-  const statusLabels = { found: '🟢 Found', claimed: '🟡 Claimed', returned: '🟣 Returned' };
-  const statusColors = {
-    found:    { color: '#34d399', bg: 'rgba(16, 185, 129, 0.12)', border: 'rgba(16, 185, 129, 0.3)' },
-    claimed:  { color: '#fbbf24', bg: 'rgba(245, 158, 11, 0.12)', border: 'rgba(245, 158, 11, 0.3)' },
-    returned: { color: '#a78bfa', bg: 'rgba(139, 92, 246, 0.12)', border: 'rgba(139, 92, 246, 0.3)' },
-  };
-  const sc = statusColors[item.status] || statusColors.found;
-
   return (
-    <div style={styles.container}>
-      <div style={styles.wrapper}>
-        <Link to="/found-items" style={styles.backLink}>← Back to Found Items Feed</Link>
+    <div className="min-h-screen bg-[var(--bg-primary)] px-4 py-16 transition-colors duration-300">
+      <div className="max-w-5xl mx-auto flex flex-col">
+        {/* Back Link */}
+        <Link to="/found-items" className="inline-block text-[10px] font-mono uppercase tracking-widest text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-6 no-underline">
+          &larr; Back to Found Items Feed
+        </Link>
 
-        <div style={styles.grid}>
-          {/* Image Column */}
-          <div style={styles.imageColumn}>
+        {/* Layout Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+          {/* Left Column: Image Section */}
+          <Card className="p-0 overflow-hidden aspect-[4/3] w-full flex items-center justify-center bg-slate-950/10 border-border-subtle relative rounded-3xl">
             {item.imageUrl ? (
-              <img src={item.imageUrl} alt={item.title} style={styles.image} />
+              <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
             ) : (
-              <div style={styles.imagePlaceholder}>
-                <span style={{ fontSize: '4rem' }}>🎁</span>
-                <span style={styles.placeholderText}>No Image Provided</span>
+              <div className="flex flex-col items-center gap-3">
+                <span className="text-5xl">🎁</span>
+                <span className="text-[10px] text-[var(--text-secondary)] font-bold font-mono uppercase tracking-widest">No Image Provided</span>
               </div>
             )}
-          </div>
+          </Card>
 
-          {/* Details Column */}
-          <div style={styles.detailsColumn}>
-            <div style={styles.badgeRow}>
-              <span style={{ ...styles.categoryBadge, backgroundColor: 'rgba(16,185,129,0.15)', color: '#34d399', border: '1px solid rgba(16,185,129,0.3)' }}>
+          {/* Right Column: Metadata Section */}
+          <Card className="p-8 flex flex-col gap-6">
+            <div className="flex flex-wrap gap-2.5">
+              <span className="px-3 py-0.5 rounded-full text-[9px] font-bold font-mono uppercase tracking-widest border bg-emerald-500/10 text-emerald-500 border-emerald-500/15">
                 🎁 Found Item
               </span>
-              <span style={{ ...styles.statusBadge, backgroundColor: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
-                {statusLabels[item.status] || item.status}
+              <span className={`px-3 py-0.5 rounded-full text-[9px] font-bold font-mono uppercase tracking-widest border ${
+                item.status === 'found'
+                  ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/15'
+                  : item.status === 'claimed'
+                  ? 'bg-amber-500/10 text-amber-500 border-amber-500/15'
+                  : 'bg-purple-500/10 text-purple-400 border-purple-500/15'
+              }`}>
+                {item.status.toUpperCase()}
               </span>
             </div>
 
-            <div style={styles.titleContainer}>
-              <h1 style={styles.title}>{item.title}</h1>
+            <div className="flex items-start justify-between gap-4">
+              <h1 className="text-xl font-bold tracking-wide text-[var(--text-primary)] leading-snug">{item.title}</h1>
               {currentUser && (
                 <BookmarkButton
                   itemId={item._id}
@@ -162,68 +171,69 @@ const FoundItemDetails = () => {
               )}
             </div>
 
-            <div style={styles.metaSection}>
-              <div style={styles.metaRow}>
-                <span style={styles.metaLabel}>📍 Found at:</span>
-                <span style={styles.metaValue}>{item.location}</span>
+            <div className="flex flex-col gap-2 font-mono text-[10px] text-[var(--text-secondary)] uppercase tracking-wider bg-slate-950/10 border border-border-subtle rounded-2xl p-4">
+              <div className="flex items-center gap-2">
+                <span className="text-xs">📍</span>
+                <span>Found at: <strong className="text-[var(--text-primary)]">{item.location}</strong></span>
               </div>
-              <div style={styles.metaRow}>
-                <span style={styles.metaLabel}>📅 Date Found:</span>
-                <span style={styles.metaValue}>{formattedDate}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs">📅</span>
+                <span>Date Found: <strong className="text-[var(--text-primary)]">{formattedDate}</strong></span>
               </div>
             </div>
 
-            <div style={styles.divider} />
-
-            <div style={styles.descSection}>
-              <h3 style={styles.sectionTitle}>Description</h3>
-              <p style={styles.descText}>{item.description}</p>
+            <div className="border-t border-border-subtle pt-6">
+              <h3 className="text-xs font-bold font-mono uppercase tracking-widest text-[var(--text-secondary)] mb-2">// Description</h3>
+              <p className="text-xs text-[var(--text-primary)] leading-relaxed">{item.description}</p>
             </div>
 
-            <div style={styles.divider} />
-
-            {/* Reporter Card */}
-            <div style={styles.reporterCard}>
-              <h4 style={styles.reporterTitle}>Reporter Information</h4>
-              <div style={styles.reporterFields}>
-                <div style={styles.reporterField}>
-                  <span style={{ fontSize: '1.2rem' }}>👤</span>
-                  <div>
-                    <p style={styles.fieldLabel}>Name</p>
-                    <p style={styles.fieldValue}>{item.user?.name || 'Anonymous User'}</p>
-                  </div>
-                </div>
-                {item.user?.email && (
-                  <div style={styles.reporterField}>
-                    <span style={{ fontSize: '1.2rem' }}>✉️</span>
+            <div className="border-t border-border-subtle pt-6">
+              <div className="bg-slate-950/10 border border-border-subtle rounded-2xl p-4">
+                <h4 className="text-[9px] font-bold font-mono uppercase tracking-widest text-[var(--text-secondary)] mb-3">// Finder Registry</h4>
+                <div className="flex flex-col gap-3 text-xs">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-sm">👤</span>
                     <div>
-                      <p style={styles.fieldLabel}>Contact Email</p>
-                      <a href={`mailto:${item.user.email}`} style={styles.emailLink}>
-                        {item.user.email}
-                      </a>
+                      <p className="text-[9px] text-[var(--text-secondary)] font-mono uppercase tracking-wider leading-none">Name</p>
+                      <p className="font-semibold text-[var(--text-primary)] mt-1">{item.user?.name || 'Anonymous User'}</p>
                     </div>
                   </div>
-                )}
+                  {item.user?.email && (
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-sm">✉️</span>
+                      <div>
+                        <p className="text-[9px] text-[var(--text-secondary)] font-mono uppercase tracking-wider leading-none">Contact Email</p>
+                        <a href={`mailto:${item.user.email}`} className="text-[var(--accent-primary)] hover:underline mt-1 block">
+                          {item.user.email}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
             {/* Owner Actions */}
             {isOwner && (
-              <div style={styles.actionRow}>
-                <Link to={`/found-items/edit/${id}`} style={styles.editBtn}>✏️ Edit Report</Link>
-                <button onClick={handleDelete} style={styles.deleteBtn}>🗑️ Delete Report</button>
+              <div className="flex gap-3 border-t border-border-subtle pt-6 font-mono">
+                <Link to={`/found-items/edit/${id}`} className="no-underline">
+                  <Button variant="secondary" size="sm">✏️ Edit Report</Button>
+                </Link>
+                <Button variant="danger" size="sm" onClick={handleDelete}>🗑️ Delete Report</Button>
               </div>
             )}
 
-            {/* Non-Owner Claim Button */}
+            {/* Non-Owner Claim */}
             {!isOwner && (
-              <div style={styles.actionRow}>
-                {item.status === 'claimed' || item.status === 'returned' ? (
-                  <button disabled style={styles.disabledBtn}>
-                    🔒 Already Resolved / Claimed
-                  </button>
+              <div className="border-t border-border-subtle pt-6">
+                {item.status === 'claimed' ? (
+                  <Button disabled variant="outline" className="w-full">🔒 Already Claimed</Button>
+                ) : item.status === 'returned' ? (
+                  <Button disabled variant="outline" className="w-full">🔒 Already Returned</Button>
                 ) : (
-                  <button
+                  <Button
+                    variant="primary"
+                    className="w-full"
                     onClick={() => {
                       if (!currentUser) {
                         navigate('/login', { state: { from: `/found-items/${id}` } });
@@ -231,132 +241,20 @@ const FoundItemDetails = () => {
                         navigate(`/claim/${id}?type=found`);
                       }
                     }}
-                    style={styles.claimBtn}
                   >
-                    🤝 Claim Item
-                  </button>
+                    🤝 Claim Item / Contact Finder
+                  </Button>
                 )}
               </div>
             )}
-          </div>
+          </Card>
         </div>
 
         {/* AI Recommendations Panel */}
         <AIMatchesSection itemId={id} type="found" />
-
       </div>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    minHeight: '85vh',
-    background: 'radial-gradient(circle at 30% 60%, #064e3b 0%, #111827 60%)',
-    fontFamily: "'Outfit', 'Inter', sans-serif",
-    padding: '40px 20px',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  wrapper: { maxWidth: '1000px', width: '100%' },
-  backLink: {
-    display: 'inline-block',
-    color: '#34d399',
-    textDecoration: 'none',
-    fontSize: '0.95rem',
-    fontWeight: '600',
-    marginBottom: '24px',
-  },
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-    backgroundColor: 'rgba(31, 41, 55, 0.55)',
-    backdropFilter: 'blur(16px)',
-    WebkitBackdropFilter: 'blur(16px)',
-    border: '1px solid rgba(16, 185, 129, 0.1)',
-    borderRadius: '16px',
-    overflow: 'hidden',
-    boxShadow: '0 20px 45px rgba(0,0,0,0.35)',
-  },
-  imageColumn: {
-    backgroundColor: '#071a12',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '350px',
-    borderRight: '1px solid rgba(16, 185, 129, 0.08)',
-  },
-  image: { width: '100%', height: '100%', objectFit: 'cover', maxHeight: '550px' },
-  imagePlaceholder: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' },
-  placeholderText: { fontSize: '0.9rem', color: '#6b7280', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' },
-  detailsColumn: { padding: '40px', display: 'flex', flexDirection: 'column' },
-  badgeRow: { display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '20px' },
-  categoryBadge: { padding: '6px 14px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' },
-  statusBadge: { padding: '6px 14px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '700' },
-  title: { fontSize: '2.25rem', fontWeight: '800', color: '#ffffff', margin: 0, lineHeight: '1.25', letterSpacing: '-0.02em' },
-  titleContainer: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: '16px',
-    marginBottom: '20px',
-  },
-  metaSection: { display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' },
-  metaRow: { display: 'flex', alignItems: 'center', fontSize: '0.95rem' },
-  metaLabel: { color: '#9ca3af', fontWeight: '600', width: '110px' },
-  metaValue: { color: '#f3f4f6', fontWeight: '500' },
-  divider: { height: '1px', backgroundColor: 'rgba(255,255,255,0.07)', margin: '24px 0' },
-  descSection: { marginBottom: '10px' },
-  sectionTitle: { fontSize: '0.85rem', fontWeight: '700', color: '#e5e7eb', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 12px 0' },
-  descText: { fontSize: '0.95rem', color: '#d1d5db', lineHeight: '1.7', margin: 0 },
-  reporterCard: { backgroundColor: 'rgba(17, 24, 39, 0.45)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px', marginTop: 'auto' },
-  reporterTitle: { fontSize: '0.8rem', fontWeight: '700', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 16px 0' },
-  reporterFields: { display: 'flex', flexDirection: 'column', gap: '14px' },
-  reporterField: { display: 'flex', alignItems: 'center', gap: '12px' },
-  fieldLabel: { fontSize: '0.72rem', color: '#9ca3af', margin: '0 0 2px 0', textTransform: 'uppercase' },
-  fieldValue: { fontSize: '0.9rem', color: '#ffffff', fontWeight: '600', margin: 0 },
-  emailLink: { fontSize: '0.9rem', color: '#34d399', textDecoration: 'none', fontWeight: '600' },
-  actionRow: { display: 'flex', gap: '16px', marginTop: '24px' },
-  editBtn: { flex: 1, padding: '12px', textAlign: 'center', borderRadius: '8px', backgroundColor: 'rgba(255, 255, 255, 0.05)', color: '#ffffff', textDecoration: 'none', fontSize: '0.95rem', fontWeight: '700', border: '1px solid rgba(255, 255, 255, 0.1)' },
-  deleteBtn: { flex: 1, padding: '12px', borderRadius: '8px', backgroundColor: 'rgba(239, 68, 68, 0.12)', color: '#f87171', border: '1px solid rgba(239, 68, 68, 0.25)', fontSize: '0.95rem', fontWeight: '700', cursor: 'pointer' },
-  claimBtn: {
-    display: 'block',
-    width: '100%',
-    textAlign: 'center',
-    padding: '14px',
-    borderRadius: '8px',
-    backgroundColor: '#34d399',
-    color: '#064e3b',
-    textDecoration: 'none',
-    fontSize: '1rem',
-    fontWeight: '700',
-    border: 'none',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    boxShadow: '0 4px 12px rgba(52, 211, 153, 0.2)',
-  },
-  disabledBtn: {
-    display: 'block',
-    width: '100%',
-    textAlign: 'center',
-    padding: '14px',
-    borderRadius: '8px',
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    color: '#9ca3af',
-    textDecoration: 'none',
-    fontSize: '1rem',
-    fontWeight: '700',
-    border: '1px solid rgba(255, 255, 255, 0.05)',
-    cursor: 'not-allowed',
-  },
-  loaderContainer: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', background: 'radial-gradient(circle at 30% 60%, #064e3b 0%, #111827 60%)' },
-  loaderText: { marginTop: '16px', color: '#9ca3af', fontSize: '0.95rem' },
-  errorAlert: { display: 'flex', gap: '16px', backgroundColor: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.18)', borderRadius: '12px', padding: '30px', maxWidth: '500px', width: '100%' },
-  alertIcon: { fontSize: '2.5rem' },
-  alertTitle: { margin: '0 0 8px 0', color: '#ef4444', fontSize: '1.2rem', fontWeight: '700' },
-  alertMessage: { margin: '0 0 20px 0', color: '#e5e7eb', fontSize: '0.95rem', lineHeight: '1.6' },
-  backBtn: { display: 'inline-block', padding: '10px 20px', borderRadius: '8px', backgroundColor: 'rgba(255,255,255,0.07)', color: '#ffffff', textDecoration: 'none', fontSize: '0.9rem', fontWeight: '600' },
 };
 
 export default FoundItemDetails;

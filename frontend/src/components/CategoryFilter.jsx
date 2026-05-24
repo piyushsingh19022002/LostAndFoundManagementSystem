@@ -19,9 +19,9 @@ const CategoryFilter = ({
   categories      = [],
   selected        = 'All',
   onSelect,
-  accentColor     = 'rgba(97, 218, 251, 0.18)',
-  accentBorder    = 'rgba(97, 218, 251, 0.55)',
-  accentTextColor = '#61dafb',
+  accentColor     = 'var(--text-primary)',
+  accentBorder    = 'var(--text-primary)',
+  accentTextColor = 'var(--bg-primary)',
   label           = 'Filter by category',
 }) => {
   if (!categories.length) return null;
@@ -38,13 +38,13 @@ const CategoryFilter = ({
               onClick={() => onSelect && onSelect(value)}
               style={{
                 ...styles.chip,
+                borderColor: isActive ? accentBorder : 'var(--border-subtle)',
+                backgroundColor: isActive ? accentColor : 'var(--bg-card)',
+                color: isActive ? accentTextColor : 'var(--text-secondary)',
                 ...(isActive
                   ? {
-                      backgroundColor: accentColor,
-                      borderColor: accentBorder,
-                      color: accentTextColor,
                       fontWeight: '700',
-                      boxShadow: `0 0 0 1px ${accentBorder}, 0 4px 12px rgba(0,0,0,0.2)`,
+                      boxShadow: 'var(--shadow-sm)',
                       transform: 'translateY(-1px)',
                     }
                   : {}),
@@ -97,19 +97,20 @@ const styles = {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '6px',
-    padding: '8px 16px',
+    padding: '8px 20px',
     borderRadius: '50px',          // pill shape
-    border: '1px solid rgba(255,255,255,0.1)',
-    backgroundColor: 'rgba(31, 41, 55, 0.55)',
-    color: '#9ca3af',
-    fontSize: '0.85rem',
+    border: '1px solid var(--border-subtle)',
+    backgroundColor: 'var(--bg-card)',
+    backdropFilter: 'blur(20px)',
+    color: 'var(--text-secondary)',
+    fontSize: '0.8rem',
     fontWeight: '500',
     cursor: 'pointer',
     whiteSpace: 'nowrap',
-    transition: 'all 0.18s ease',
-    fontFamily: "'Outfit', 'Inter', sans-serif",
+    transition: 'all 0.3s ease',
+    fontFamily: "'Space Grotesk', 'Inter', sans-serif",
     outline: 'none',
-    letterSpacing: '0.01em',
+    letterSpacing: '0.02em',
     flexShrink: 0,
   },
   chipIcon: {
